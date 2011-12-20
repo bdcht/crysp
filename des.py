@@ -2,43 +2,51 @@
 
 from bits import *
 
-def enc(K, M, verbose=1):
+def enc(K, M):
     assert M.size==64
     k = PC1(K)
     blk = IP(M)
     L = Bits(blk[0:32])
     R = Bits(blk[32:64])
     for r in range(16):
-        if verbose:
-            print '--- enc round %i'%r
-            print L,R
-        k=shiftkey(k,r)
-        fout = F(R,k)
+        fout = F(R,k,r)
         L = L^fout
         L,R = R,L
-        if verbose:
-            print L,R
-            print 'end -------------'
     L,R = R,L
     C = Bits(0,64)
     C[0:32] = L
     C[32:64] = R
     return IPinv(C)
 
-def shiftkey(k,r):
+def dec(K, C):
+    assert C.size==64
+    k = PC1(K)
+    blk = IP(C)
+    L = Bits(blk[0:32])
+    R = Bits(blk[32:64])
+    for r in range(16)[::-1]:
+        fout = F(R,k,r)
+        L = L^fout
+        L,R = R,L
+    L,R = R,L
+    M = Bits(0,64)
+    M[0:32] = L
+    M[32:64] = R
+    return IPinv(M)
+
+def subkey(k,r):
     C = Bits(k[0:28])
     D = Bits(k[28:56])
-    shift=1
-    if r not in [0,1,8,15]: shift=2
-    k[0:28]   = C>>shift | C<<(28-shift)
-    k[28:56] =  D>>shift | D<<(28-shift)
-    return k
+    shifts = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1]
+    s = sum(shifts[:r+1])
+    C = C>>s | C<<(28-s)
+    D = D>>s | D<<(28-s)
+    return PC2(Bits(C[:]+D[:]))
 
-def F(R,k):
+def F(R,k,r):
     RE = E(R)
     Z  = Bits(0,32)
-    fk = PC2(k)
-    print 'K:',fk[:]
+    fk = subkey(k,r)
     s  = RE^fk
     ri,ro = 0,0
     for n in range(8):
@@ -47,7 +55,6 @@ def F(R,k):
         i = (x[0]<<1) + x[5]
         j = (x[1]<<3) + (x[2]<<2) + (x[3]<<1) + x[4]
         Z[ro:nro] = Bits(S(n,(i<<4)+j),4)[::-1]
-        print "S%i(%d):"%(n,(i<<4)+j),Z[ro:nro]
         ri,ro = nri,nro
     return P(Z)
 

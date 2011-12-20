@@ -37,7 +37,6 @@ class Bits:
       self.size = len(v)*8
       self.mask = (1L<<self.size) -1L
       l = map(ord,v)
-      #l.reverse()
       i=0
       for o in l:
         self[i:i+8] = Bits(o,8)[::-1]
@@ -78,12 +77,11 @@ class Bits:
     return s
 
   def __hex__(self):
-      return a2b_hex("%02x"%Bits(self[::-1]).ival)
+      s = "%x"%Bits(self[::-1]).ival
+      return a2b_hex(s.ljust(self.size/4,'0'))
 
   def todots(self):
     return '|%s|'%str(self).replace('0',' ').replace('1','.')
-
-
 
 # Basic comparison method ('is' operator), falls back to integer comparison.
 #------------------------------------------------------------------------------
