@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from math import *
+from binascii import b2a_hex,a2b_hex
 import struct
 
 
@@ -36,10 +37,10 @@ class Bits:
       self.size = len(v)*8
       self.mask = (1L<<self.size) -1L
       l = map(ord,v)
-      l.reverse()
+      #l.reverse()
       i=0
       for o in l:
-        self[i:i+8] = Bits(o,8)
+        self[i:i+8] = Bits(o,8)[::-1]
         i += 8
     if size: self.size = size
 
@@ -65,33 +66,22 @@ class Bits:
     c = self.__class__
     l = self.size
     s = self.ival
-    return '<%s instance with ival=%d (len=%d)>'%(c,s,l)
+    return '<%s instance with ival=%x (len=%d)>'%(c,s,l)
 
 # binary string converter.
-# (The string is MSB first, see Bitseq class for a flow string)
+# (The string is LSB first)
 #------------------------------------------------------------------------------
   def __str__(self):
     s = ''
     for i in self:
-      s = str(i)+s
+      s = s+str(i)
     return s
 
-  def tostring(self):
-    s = ""
-    v = self.ival
-    while v>0:
-      s = struct.pack('>I',v&0xffffffff)+s
-      v = v>>32
-    return s.strip('\0')
+  def __hex__(self):
+      return a2b_hex("%02x"%Bits(self[::-1]).ival)
 
   def todots(self):
-    s = '|'
-    for i in self:
-      if i==0:
-        s=' '+s
-      else :
-        s = '.'+s
-    return '|'+s
+    return '|%s|'%str(self).replace('0',' ').replace('1','.')
 
 
 
