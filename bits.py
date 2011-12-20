@@ -78,7 +78,7 @@ class Bits:
 
   def __hex__(self):
       s = "%x"%Bits(self[::-1]).ival
-      return a2b_hex(s.ljust(self.size/4,'0'))
+      return a2b_hex(s.rjust(self.size/4,'0'))
 
   def todots(self):
     return '|%s|'%str(self).replace('0',' ').replace('1','.')
