@@ -6,8 +6,8 @@ def enc(K, M):
     assert M.size==64
     k = PC1(K)
     blk = IP(M)
-    L = Bits(blk[0:32])
-    R = Bits(blk[32:64])
+    L = blk[0:32]
+    R = blk[32:64]
     for r in range(16):
         fout = F(R,k,r)
         L = L^fout
@@ -22,8 +22,8 @@ def dec(K, C):
     assert C.size==64
     k = PC1(K)
     blk = IP(C)
-    L = Bits(blk[0:32])
-    R = Bits(blk[32:64])
+    L = blk[0:32]
+    R = blk[32:64]
     for r in range(16)[::-1]:
         fout = F(R,k,r)
         L = L^fout
@@ -35,13 +35,13 @@ def dec(K, C):
     return IPinv(M)
 
 def subkey(k,r):
-    C = Bits(k[0:28])
-    D = Bits(k[28:56])
+    C = k[0:28]
+    D = k[28:56]
     shifts = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1]
     s = sum(shifts[:r+1])
     C = C>>s | C<<(28-s)
     D = D>>s | D<<(28-s)
-    return PC2(Bits(C[:]+D[:]))
+    return PC2(C//D)
 
 def F(R,k,r):
     RE = E(R)
@@ -52,8 +52,8 @@ def F(R,k,r):
     for n in range(8):
         nri,nro = ri+6,ro+4
         x = s[ri:nri]
-        i = (x[0]<<1) + x[5]
-        j = (x[1]<<3) + (x[2]<<2) + (x[3]<<1) + x[4]
+        i = x[(5,0)].ival
+        j = x[(4,3,2,1)].ival
         Z[ro:nro] = Bits(S(n,(i<<4)+j),4)[::-1]
         ri,ro = nri,nro
     return P(Z)
@@ -68,7 +68,7 @@ def IP(M):
     	     58, 50, 42, 34, 26, 18, 10, 2,
     	     60, 52, 44, 36, 28, 20, 12, 4,
     	     62, 54, 46, 38, 30, 22, 14, 6]
-    return Bits([M[i] for i in table],64)
+    return M[table]
 
 def IPinv(M):
     assert M.size==64
@@ -80,7 +80,7 @@ def IPinv(M):
 	     34,  2, 42, 10, 50, 18, 58, 26,
 	     33,  1, 41,  9, 49, 17, 57, 25,
 	     32,  0, 40,  8, 48, 16, 56, 24]
-    return Bits([M[i] for i in table],64)
+    return M[table]
 
 def PC1(K):
     table = [56, 48, 40, 32, 24, 16,  8,
@@ -91,7 +91,7 @@ def PC1(K):
 	      6, 61, 53, 45, 37, 29, 21,
 	     13,  5, 60, 52, 44, 36, 28,
 	     20, 12,  4, 27, 19, 11,  3]
-    return Bits([K[i] for i in table],56)
+    return  K[table]
 
 def PC2(K):
     assert K.size==56
@@ -103,7 +103,7 @@ def PC2(K):
 	     29, 39, 50, 44, 32, 47,
 	     43, 48, 38, 55, 33, 52,
 	     45, 41, 49, 35, 28, 31]
-    return Bits([K[i] for i in table],48)
+    return  K[table]
 
 def E(L):
     assert L.size==32
@@ -115,7 +115,7 @@ def E(L):
 	     19, 20, 21, 22, 23, 24,
 	     23, 24, 25, 26, 27, 28,
 	     27, 28, 29, 30, 31,  0]
-    return Bits([L[i] for i in table],48)
+    return L[table]
 
 def P(s):
     assert s.size==32
@@ -125,7 +125,7 @@ def P(s):
 	     23,13, 31, 26, 2, 8,
 	     18, 12, 29, 5, 21, 10,
 	     3, 24]
-    return Bits([s[i] for i in table],32)
+    return  s[table]
 
 def S(n,x):
     assert 0 <= n < 8
