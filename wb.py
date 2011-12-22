@@ -88,39 +88,3 @@ class WhiteBoxDes(ECB):
             ri,ro = nri,nro
         return P(fout)
 
-# -----------------------------------------------------------------------------
-# The naked (almost easy) WhiteBox DES:
-
-def table_rKT(r,K):
-    rks = table_rKS(r,K)
-    rkt = []
-    for n in range(8):
-        rkt.append([0]*256)
-    for v in range(256):
-        e = Bits(v,8)
-        for n in range(8):
-            rkt[n][e.ival] = (Bits(rks[n][e[0:6].ival],4)//e[(0,5,6,7)]).ival
-    for n in range(8):
-        rkt[n] = tuple(rkt[n])
-    return tuple(rkt)
-
-
-class NakedDes(ECB):
-
-    def __init__(self,KT):
-        self.KT = KT
-
-    def _cipher(self,M,d):
-        assert M.size==64
-        blk = IP(M)
-        L = blk[0:32]
-        R = blk[32:64]
-        for r in range(16)[::d]:
-            L = L^self.F(r,R)
-            L,R = R,L
-        L,R = R,L
-        C = Bits(0,64)
-        C[0:32] = L
-        C[32:64] = R
-        return IPinv(C)
-
