@@ -39,7 +39,7 @@ class ECB(object):
         return B
 
 # -----------------------------------------------------------------------------
-# precomputed Sbox(.,K). [unused]
+# precompute Sbox(.,K)
 
 def table_rKS(r,K):
     fk = subkey(PC1(K),r)
@@ -61,6 +61,11 @@ def table_rKS(r,K):
 
 # -----------------------------------------------------------------------------
 # The bare naked DES (lacks de-linearization and encoding ! => M2 is sparse).
+# The main weakness here is that the internal state of the whitebox holds
+# a quite simple permutation of the DES internal (L,R) state after every round.
+# This means that reducing rounds to N in the whitebox, leads to a N-round DES.
+# The most obvious way of breaking it is to patch WT.enc for doing 1 round only
+# and compute L1,R1 = IP(WT.enc(m)) ;)
 
 def table_rKT(r,K):
     rks = table_rKS(r,K)

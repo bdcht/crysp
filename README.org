@@ -1,0 +1,88 @@
+#+TITLE: crysp-"Crypto Stuff in Python" 
+#+AUTHOR: Axel Tillequin
+#+DATE: 2012
+#+EMAIL: bdcht3@gmail.com
+#+DESCRIPTION:
+#+KEYWORDS: 
+#+LANGUAGE: en
+#+OPTIONS: H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS: TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+EXPORT_EXCLUDE_TAGS: exclude
+#+STARTUP: showall
+
+ | Status:   | Under Development                 |
+ | Location: | [[http://github.com/bdcht/crysp]] |
+ | Version:  | 0.1                               |
+
+* Description
+
+crysp is a python package with some of my crypto-related facilities.
+
+* Install
+
+  crysp requires the following python packages:
+  - [[http://pypi.python.org/pypi/numpy][numpy]],
+
+  crysp/utils suggests the following python packages:
+  - [[http://matplotlib.sourceforge.net/][matplotlib]], for displaying histograms.
+  - [[https://github.com/bdcht/grandalf][grandalf]], in utils/freq2.py.
+
+* Overview
+
+** =bits.py= :
+  Contains the bitvector/bitstream manipulation methods.
+  This module defines the classes:
+  - Bits
+
+*** Bits.
+  A Bits object is defined by a long ival, a size field and a mask.
+  It can be created from either:
+  - an int or long,
+  - a list of bit values ([0,0,1,...,0,1,1]) with LSB first,
+  - a string, also with LSB first,
+  - or another Bits instance.
+  A Bits object ival holds the list of bits encoded in base10 with bit0 being
+  the LSB of ival.
+  When created from an integer value, this value simply defines the ival,
+  and the size/mask is computed automatically.
+  When created from a bit list the list defines bits LSB to MSB.
+  When created from a string, the string is parsed as a stream of bits : the LSB
+  is the MSB of the first char.
+  It can be tricky to get used to the initialisation convention:
+  Example:
+  #+BEGIN_EXAMPLE
+  >>> b1 = Bits(10)
+  >>> b2 = Bits([0,1,0,1])
+  >>> b3 = Bits('\x50',size=4)
+  >>> b1==b2==b3
+  True
+  #+END_EXAMPLE
+
+
+** =poly.py= :
+  Contains the bytevector/bytestream manipulation methods.
+  This module defines the classes:
+  - Poly
+
+*** Poly.
+  This class is very similar to Bits but operates on bytes rather than bits.
+
+** =crc.py= :
+  Contains generic CRC and CRC32 manipulation algorithms.
+  This module defines the functions:
+  - crc_table, crc_back_table
+  - crc
+  - crc_back_pos
+  - crc32
+  - crc32_back_pos
+  - crc32_fix, crc32_fix_pos
+
+Most functions are self-explanatory ;)
+
+** =des.py= :
+
+** =wb.py= :
+
+** utils/ :
+  Contains some grandpa crypto utilities that are still useful sometimes...
+
