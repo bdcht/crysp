@@ -39,7 +39,7 @@ class ECB(object):
         return B
 
 # -----------------------------------------------------------------------------
-# The easy WhiteBox DES:
+# precomputed Sbox(.,K). [unused]
 
 def table_rKS(r,K):
     fk = subkey(PC1(K),r)
@@ -59,38 +59,8 @@ def table_rKS(r,K):
     return tuple(rks)
 
 
-class WhiteBoxDes(ECB):
-
-    def __init__(self,KS):
-        self.KS = KS
-
-    def _cipher(self,M,d):
-        assert M.size==64
-        blk = IP(M)
-        L = blk[0:32]
-        R = blk[32:64]
-        for r in range(16)[::d]:
-            L = L^self.F(r,R)
-            L,R = R,L
-        L,R = R,L
-        C = Bits(0,64)
-        C[0:32] = L
-        C[32:64] = R
-        return IPinv(C)
-
-    def F(self,r,R):
-        RE = E(R)
-        fout = Bits(0,32)
-        ri,ro = 0,0
-        for n in range(8):
-            nri,nro = ri+6,ro+4
-            x = RE[ri:nri]
-            fout[ro:nro] = self.KS[r][n][x.ival]
-            ri,ro = nri,nro
-        return P(fout)
-
 # -----------------------------------------------------------------------------
-# The naked DES:
+# The bare naked DES (lacks de-linearization and encoding ! => M2 is sparse).
 
 def table_rKT(r,K):
     rks = table_rKS(r,K)
