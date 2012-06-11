@@ -20,11 +20,9 @@ crysp is a python package with some of my crypto-related facilities.
 
 * Install
 
-  crysp requires the following python packages:
-  - [[http://pypi.python.org/pypi/numpy][numpy]],
-
   crysp/utils suggests the following python packages:
-  - [[http://matplotlib.sourceforge.net/][matplotlib]], for displaying histograms.
+  - [[http://matplotlib.sourceforge.net/][matplotlib]], for displaying
+    histograms.
   - [[https://github.com/bdcht/grandalf][grandalf]], in utils/freq2.py.
 
 * Overview
@@ -46,10 +44,10 @@ crysp is a python package with some of my crypto-related facilities.
   When created from an integer value, this value simply defines the ival,
   and the size/mask is computed automatically.
   When created from a bit list the list defines bits LSB to MSB.
-  When created from a string, the string is parsed as a stream of bits : the LSB
-  is the MSB of the first char.
-  It can be tricky to get used to the initialisation convention:
-  Example:
+  When created from a string, the string is parsed as a stream of bits :
+  the bit with index 0 (LSB of ival) is the MSB of the first char.
+  It can be tricky to get used to this initialisation convention, especially
+  looking at /b1/ and /b3/ in the following example:
   #+BEGIN_EXAMPLE
   >>> b1 = Bits(10)
   >>> b2 = Bits([0,1,0,1])
