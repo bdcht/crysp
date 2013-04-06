@@ -82,12 +82,12 @@ class Poly(object):
 #------------------------------------------------------------------------------
   def __eq__(self,a):
     if isinstance(a,Poly):
-        return False not in map(lambda x,y:x==y,zip(self,a))
+        return False not in map(lambda x,y:x==y,self,a)
     return (self.ival==a)
 #------------------------------------------------------------------------------
   def __ne__(self,a):
     if isinstance(a,Poly):
-        return False not in map(lambda x,y:x<>y,zip(self,a))
+        return False not in map(lambda x,y:x<>y,self,a)
     return (self.ival<>a)
 
 # getitem operator defines b[i], b[i:j] and b[list] which returns the requested
@@ -146,25 +146,41 @@ class Poly(object):
       obj = Poly(rvalue,ring=self.ring)
     else:
       obj = rvalue
-    return Poly(map(lambda x,y: x&y, zip(self.ival,obj.ival)),self.ring)
+    return Poly(map(lambda x,y: x&y,self.ival,obj.ival),self.ring)
   def __or__(self,rvalue):
     if not isinstance(rvalue,Poly):
       obj = Poly(rvalue,ring=self.ring)
     else:
       obj = rvalue
-    return Poly(map(lambda x,y: x|y, zip(self.ival,obj.ival)),self.ring)
+    return Poly(map(lambda x,y: x|y,self.ival,obj.ival),self.ring)
   def __xor__(self,rvalue):
     if not isinstance(rvalue,Poly):
       obj = Poly(rvalue,ring=self.ring)
     else:
       obj = rvalue
-    return Poly(map(lambda x,y: x^y, zip(self.ival,obj.ival)),self.ring)
+    return Poly(map(lambda x,y: x^y,self.ival,obj.ival),self.ring)
+  def __add__(self,rvalue):
+    if not isinstance(rvalue,Poly):
+      obj = Poly(rvalue,ring=self.ring)
+    else:
+      obj = rvalue
+    return Poly(map(lambda x,y: x+y,self.ival,obj.ival),self.ring)
+  def __sub__(self,rvalue):
+    if not isinstance(rvalue,Poly):
+      obj = Poly(rvalue,ring=self.ring)
+    else:
+      obj = rvalue
+    return Poly(map(lambda x,y: x-y,self.ival,obj.ival),self.ring)
 
   def __rand__(self,lvalue):
     return (self & lvalue)
   def __ror__(self,lvalue):
     return (self | lvalue)
   def __rxor__(self,lvalue):
+    return (self ^ lvalue)
+  def __radd__(self,lvalue):
+    return (self ^ lvalue)
+  def __rsub__(self,lvalue):
     return (self ^ lvalue)
 
 # operator // is used for concatenation:
