@@ -48,11 +48,14 @@ crysp is a python package with some of my crypto-related facilities.
   the bit with index 0 (LSB of ival) is the MSB of the first char.
   It can be tricky to get used to this initialisation convention, especially
   looking at /b1/ and /b3/ in the following example:
+  Optionnally, the bytestring can be decoded as a little-endian arbitrary long
+  integer by using parameter bitorder=1:
   #+BEGIN_EXAMPLE
   >>> b1 = Bits(10)
   >>> b2 = Bits([0,1,0,1])
   >>> b3 = Bits('\x50',size=4)
-  >>> b1==b2==b3
+  >>> b4 = Bits('\x0a',size=4,bitorder=1)
+  >>> b1==b2==b3==b4
   True
   #+END_EXAMPLE
 
@@ -63,7 +66,8 @@ crysp is a python package with some of my crypto-related facilities.
   - Poly
 
 *** Poly.
-  This class is very similar to Bits but operates on bytes rather than bits.
+  This class API is very similar to Bits, but extends to polynomials in arbitrary rings.
+  It allows for example to operate on bytes (ring=256) rather than bits.
 
 ** =crc.py= :
   Contains generic CRC and CRC32 manipulation algorithms.
