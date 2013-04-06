@@ -4,37 +4,79 @@ from math import *
 from binascii import b2a_hex,a2b_hex
 import struct
 
+# reverse all bits in a byte:
+def reverse_byte(b):
+    return (b * 0x0202020202L & 0x010884422010L) % 1023
 
+def pack(obj,fmt='<L'):
+    assert fmt in ['<L']
+    s = (chr(x.ival&0xff) for x in obj.split(8))
+    return ''.join(s)
+
+
+hextab_r = ('0000','1000','0100','1100',
+            '0010','1010','0110','1110',
+            '0001','1001','0101','1101',
+            '0011','1011','0111','1111')
+
+# The Bits class represents an ordered sequence of bits.
+#
+# ival: holds the bit sequence as a native python integer (bit0 is LSB).
+# size: actual length of the sequence (ival might encode more bits)
+# mask: automatically adjusted to size, but can be redefined if needed.
+#
+# Bits instance can be initialised from:
+#  - int/long values: bits are ordered from LSB to MSB.
+#  - list (of bits) : bits are ordered as listed.
+#  - strings        : by default, bit0 is MSB of 1st byte! (stream mode)
+#                     This means that Bits('\x80',5) is the sequence
+#                     [1,0,0,0,0].
+#                     It is possible also to follow the little-endian
+#                     bit ordering by using the bitorder=1 parameter:
+#                     Bits('\x01\x0f',size=13,bitorder=1) is sequence
+#                     [1,0,0,0,0,0,0,0,1,1,1,1,0]
+# Bits can be represented as follows:
+#  - human-readable string of chars : str(Bits('\x80',5)) =>  '10000'
+#  - human-readable dot alternative : Bits('\x80',5).todots() =>  '|.    |'
+#  - the bit sequence as a list: Bits('\x80',5).bitlist() = [1,0,0,0,0]
+#  - integer : using internal ival field is not recommended, use Bits.int()
+#  - raw bitstream as a bytestring: hex(Bits('\x82',5) => '\x80'.
+#    (note that if size is not a multiple of 8, the bitstream is naturally
+#     extended with 0 bit padding). Again, bit0 is MSB of 1st byte.
+#  - raw little-endian "packed" bytestring: the struct.pack extension
+#     to encode the sequence as a little-endian arbitrary long integer is
+#     provided by function pack in module bits.
 class Bits:
-
   ival   = 0L
-  size   = 1
-  mask   = 0x1L
+  size   = 0
+  mask   = 0L
 
-  def __init__(self,v,size=None):
+  def __init__(self,v,size=None,bitorder=-1):
     if isinstance(v,Bits):
       self.ival = v.ival
       self.size = v.size
       self.mask = v.mask
     elif isinstance(v,int) or isinstance(v,long):
-      if v:
-        self.ival = abs(v*1L)
+      self.ival = abs(v*1L)
+      if self.ival>0:
         self.size = int(floor(log(self.ival)/log(2)+1))
-        self.mask = (1L<<self.size) -1L
+      self.mask = (1L<<self.size) -1L
     elif isinstance(v,list):
       self.size = len(v)
       self.mask = (1L<<self.size) -1L
       for i,x in enumerate(v):
         self[i] = x
     elif isinstance(v,str):
-      self.size = len(v)*8
-      self.mask = (1L<<self.size) -1L
-      l = map(ord,v)
-      i=0
-      for o in l:
-        self[i:i+8] = Bits(o,8).bitlist()[::-1]
-        i += 8
-    if size: self.size = size
+      self.load(v,bitorder)
+    if size!=None: self.size = size
+
+  def load(self,bytestr,bitorder=-1):
+    self.size = len(bytestr)*8
+    l = map(ord,bytestr)
+    i=0
+    for o in l:
+      self[i:i+8] = Bits(o,8).bitlist(bitorder)
+      i += 8
 
   def __len__(self):
     return self.size
@@ -47,6 +89,10 @@ class Bits:
     else:
       raise IndexError
 
+  def int(self):
+    return self.ival&self.mask
+
+  # TODO: this is too old-fashion...use getter/setter
   def __setattr__(self,field,v):
     if field == 'size':
       self.__dict__['size'] = v
@@ -62,15 +108,29 @@ class Bits:
 
   # binary string representation, bit0 1st.
   def __str__(self):
-    s = ''
-    for i in self:
-      s = s+str(i)
-    return s
+    xval = ("%x"%(self.ival&self.mask)).zfill(self.size/4+1)
+    s = [hextab_r[int(x,16)] for x in xval]
+    s.reverse()
+    return ''.join(s)[:self.size]
 
   # byte string representation, bit0 1st (crypto notation).
   def __hex__(self):
-      s = "%x"%self[::-1].ival
-      return a2b_hex(s.rjust(self.size/4,'0'))
+      v = self.ival&self.mask
+      i = 0
+      s = []
+      while i<self.size:
+          s.append(chr(reverse_byte(v&0xff)))
+          v = v>>8
+          i += 8
+      return ''.join(s)
+
+  def split(self,subsize):
+      l = []
+      i = 0
+      while i<self.size:
+          l.append(self[i:i+subsize])
+          i += subsize
+      return l
 
   def todots(self):
     return '|%s|'%str(self).replace('0',' ').replace('1','.')
@@ -208,8 +268,10 @@ class Bits:
       obj = rvalue
     return Bits(self.bitlist()+obj.bitlist())
 
-  def bitlist(self):
-    return map(int,str(self))
+  def bitlist(self,dir=1):
+    l = map(int,str(self))
+    if dir==-1: l.reverse()
+    return l
 
 # hamming weight of the object (count of 1s).
 #------------------------------------------------------------------------------
