@@ -85,6 +85,11 @@ Most functions are self-explanatory ;)
 
 ** =wb.py= :
 
+** =keccak.py= :
+  Contains the Keccak class which provides a full implementation of the Keccak sponge functions family.
+  This module also defines the 4 SHA-3 instances: sha3_224, sha3_256, sha3_384, sha3_512.
+  See tests/test-keccak.py for examples.
+
 ** utils/ :
   Contains some grandpa crypto utilities that are still useful sometimes...
 
