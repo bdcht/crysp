@@ -46,24 +46,21 @@ hextab_r = ('0000','1000','0100','1100',
 #  - raw little-endian "packed" bytestring: the struct.pack extension
 #     to encode the sequence as a little-endian arbitrary long integer is
 #     provided by function pack in module bits.
-class Bits:
-  ival   = 0L
-  size   = 0
-  mask   = 0L
+class Bits(object):
+  __slots__ = ['ival','__sz','mask']
 
   def __init__(self,v,size=None,bitorder=-1):
+    self.ival = self.__sz = self.mask = 0L
     if isinstance(v,Bits):
       self.ival = v.ival
-      self.size = v.size
+      self.__sz = v.size
       self.mask = v.mask
     elif isinstance(v,int) or isinstance(v,long):
       self.ival = abs(v*1L)
       if self.ival>0:
         self.size = int(floor(log(self.ival)/log(2)+1))
-      self.mask = (1L<<self.size) -1L
     elif isinstance(v,list):
       self.size = len(v)
-      self.mask = (1L<<self.size) -1L
       for i,x in enumerate(v):
         self[i] = x
     elif isinstance(v,str):
@@ -82,43 +79,44 @@ class Bits:
     return self.size
 
   def bit(self,i):
-    if i in range(self.size):
+    if i in range(self.__sz):
       return (self.ival>>i)&0x1L
-    elif -i in range(self.size+1):
-      return (self.ival>>(self.size+i))&0x1L
+    elif -i in range(self.__sz+1):
+      return (self.ival>>(self.__sz+i))&0x1L
     else:
       raise IndexError
 
   def int(self):
     return self.ival&self.mask
 
-  # TODO: this is too old-fashion...use getter/setter
-  def __setattr__(self,field,v):
-    if field == 'size':
-      self.__dict__['size'] = v
-      self.__dict__['mask'] = (1L<<v) -1L
-    else:
-      self.__dict__[field] = v
+  @property
+  def size(self):
+      return self.__sz
+
+  @size.setter
+  def size(self,v):
+      self.__sz = v
+      self.mask = (1L<<v)-1L
 
   def __repr__(self):
     c = self.__class__
-    l = self.size
+    l = self.__sz
     s = self.ival
     return '<%s instance with ival=%x (len=%d)>'%(c,s,l)
 
   # binary string representation, bit0 1st.
   def __str__(self):
-    xval = ("%x"%(self.ival&self.mask)).zfill(self.size/4+1)
+    xval = ("%x"%(self.ival&self.mask)).zfill(self.__sz/4+1)
     s = [hextab_r[int(x,16)] for x in xval]
     s.reverse()
-    return ''.join(s)[:self.size]
+    return ''.join(s)[:self.__sz]
 
   # byte string representation, bit0 1st (crypto notation).
   def __hex__(self):
       v = self.ival&self.mask
       i = 0
       s = []
-      while i<self.size:
+      while i<self.__sz:
           s.append(chr(reverse_byte(v&0xff)))
           v = v>>8
           i += 8
@@ -127,7 +125,7 @@ class Bits:
   def split(self,subsize):
       l = []
       i = 0
-      while i<self.size:
+      while i<self.__sz:
           l.append(self[i:i+subsize])
           i += subsize
       return l
@@ -178,18 +176,18 @@ class Bits:
   def __setitem__(self,i,v):
     if isinstance(i,int):
       assert v in (0,1)
-      if i in range(self.size):
+      if i in range(self.__sz):
         if self.bit(i)==1: self.ival -= 0x1L<<i
         self.ival += (v&0x1L)<<i
-      elif -i in range(self.size+1):
-        p = self.size+i
+      elif -i in range(self.__sz+1):
+        p = self.__sz+i
         if self.bit(p)==1: self.ival -= 0x1L<<p
         self.ival += (v&0x1L)<<p
       else:
         raise IndexError
     else:
       if isinstance(i,slice):
-        start,stop,step = i.indices(self.size)
+        start,stop,step = i.indices(self.__sz)
         r = range(start,stop,step)
       else:
         r = i
