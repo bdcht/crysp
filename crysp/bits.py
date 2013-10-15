@@ -214,6 +214,19 @@ class Bits(object):
     res.ival = res.ival ^ res.mask
     return res
 
+  def zeroextend(self,size):
+    if size>self.size:
+      self.size = size
+
+  def signextend(self,size):
+    if size>self.size:
+      m = self.mask
+      s = self[-1]
+      self.size = size
+      if s==1:
+        m ^= self.mask
+        self.ival |= m
+
 # binary operators, rvalue and lvalue implementations.
 # (Note that resulting object length is max length.
 #------------------------------------------------------------------------------
