@@ -49,7 +49,7 @@ Bits.
   Optionnally, the bytestring can be decoded as a little-endian arbitrary long
   integer by using parameter bitorder=1:
 
-.. pygments:: python
+.. sourcecode:: python
 
    >>> b1 = Bits(10)
    >>> b2 = Bits([0,1,0,1])
