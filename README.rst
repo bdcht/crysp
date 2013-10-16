@@ -1,44 +1,42 @@
-#+TITLE: crysp-"Crypto Stuff in Python" 
-#+AUTHOR: Axel Tillequin
-#+DATE: 2012
-#+EMAIL: bdcht3@gmail.com
-#+DESCRIPTION:
-#+KEYWORDS: 
-#+LANGUAGE: en
-#+OPTIONS: H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
-#+OPTIONS: TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+EXPORT_EXCLUDE_TAGS: exclude
-#+STARTUP: showall
+==============================
+Crysp-"Crypto Stuff in Python"
+==============================
 
- | Status:   | Under Development                 |
- | Location: | [[http://github.com/bdcht/crysp]] |
- | Version:  | 0.1                               |
-
-* Description
+Description
+===========
 
 crysp is a python package with some of my crypto-related facilities.
 
-* Install
+Install
+=======
 
   crysp/utils suggests the following python packages:
-  - [[http://matplotlib.sourceforge.net/][matplotlib]], for displaying
-    histograms.
-  - [[https://github.com/bdcht/grandalf][grandalf]], in utils/freq2.py.
 
-* Overview
+  - matplotlib_, for displaying histograms.
+  - grandalf_, in utils/freq2.py.
 
-** =bits.py= :
+Overview
+========
+
+*bits.py*
+---------
+
   Contains the bitvector/bitstream manipulation methods.
   This module defines the classes:
+
   - Bits
 
-*** Bits.
+Bits.
+~~~~~
+
   A Bits object is defined by a long ival, a size field and a mask.
   It can be created from either:
+
   - an int or long,
   - a list of bit values ([0,0,1,...,0,1,1]) with LSB first,
   - a string, also with LSB first,
   - or another Bits instance.
+
   A Bits object ival holds the list of bits encoded in base10 with bit0 being
   the LSB of ival.
   When created from an integer value, this value simply defines the ival,
@@ -50,28 +48,37 @@ crysp is a python package with some of my crypto-related facilities.
   looking at /b1/ and /b3/ in the following example:
   Optionnally, the bytestring can be decoded as a little-endian arbitrary long
   integer by using parameter bitorder=1:
-  #+BEGIN_EXAMPLE
-  >>> b1 = Bits(10)
-  >>> b2 = Bits([0,1,0,1])
-  >>> b3 = Bits('\x50',size=4)
-  >>> b4 = Bits('\x0a',size=4,bitorder=1)
-  >>> b1==b2==b3==b4
-  True
-  #+END_EXAMPLE
+
+.. pygments:: python
+
+   >>> b1 = Bits(10)
+   >>> b2 = Bits([0,1,0,1])
+   >>> b3 = Bits('\x50',size=4)
+   >>> b4 = Bits('\x0a',size=4,bitorder=1)
+   >>> b1==b2==b3==b4
+   True
 
 
-** =poly.py= :
+*poly.py*
+---------
+
   Contains the bytevector/bytestream manipulation methods.
   This module defines the classes:
+
   - Poly
 
-*** Poly.
+Poly.
+~~~~~
+
   This class API is very similar to Bits, but extends to polynomials in arbitrary rings.
   It allows for example to operate on bytes (ring=256) rather than bits.
 
-** =crc.py= :
+*crc.py*
+--------
+
   Contains generic CRC and CRC32 manipulation algorithms.
   This module defines the functions:
+
   - crc_table, crc_back_table
   - crc
   - crc_back_pos
@@ -81,15 +88,23 @@ crysp is a python package with some of my crypto-related facilities.
 
 Most functions are self-explanatory ;)
 
-** =des.py= :
+*des.py*
+--------
 
-** =wb.py= :
+*wb.py*
+-------
 
-** =keccak.py= :
+*keccak.py*
+-----------
+
   Contains the Keccak class which provides a full implementation of the Keccak sponge functions family.
   This module also defines the 4 SHA-3 instances: sha3_224, sha3_256, sha3_384, sha3_512.
   See tests/test-keccak.py for examples.
 
-** utils/ :
+utils/
+------
+
   Contains some grandpa crypto utilities that are still useful sometimes...
 
+.. _matplotlib: http://matplotlib.sourceforge.net
+.. _grandalf: https://github.com/bdcht/grandalf
