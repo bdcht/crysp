@@ -217,6 +217,7 @@ class Bits(object):
   def zeroextend(self,size):
     if size>self.size:
       self.size = size
+    return self
 
   def signextend(self,size):
     if size>self.size:
@@ -226,6 +227,10 @@ class Bits(object):
       if s==1:
         m ^= self.mask
         self.ival |= m
+    return self
+
+  def extend(self,sign,size):
+    return self.signextend(size) if sign is True else self.zeroextend(size)
 
 # binary operators, rvalue and lvalue implementations.
 # (Note that resulting object length is max length.
