@@ -268,6 +268,28 @@ class Bits(object):
       res = Bits(obj)
     res.ival = ( self.ival ^ obj.ival )
     return res
+  def __add__(self,rvalue):
+    if not isinstance(rvalue,Bits):
+      obj = Bits(rvalue)
+    else:
+      obj = rvalue
+    if self.size > obj.size:
+      res = Bits(self)
+    else:
+      res = Bits(obj)
+    res.ival = ( self.ival + obj.ival )&res.mask
+    return res
+  def __sub__(self,rvalue):
+    if not isinstance(rvalue,Bits):
+      obj = Bits(rvalue)
+    else:
+      obj = rvalue
+    if self.size > obj.size:
+      res = Bits(self)
+    else:
+      res = Bits(obj)
+    res.ival = ( self.ival - obj.ival )&res.mask
+    return res
 
   def __rand__(self,lvalue):
     return (self & lvalue)
@@ -275,6 +297,10 @@ class Bits(object):
     return (self | lvalue)
   def __rxor__(self,lvalue):
     return (self ^ lvalue)
+  def __radd__(self,lvalue):
+    return (self + lvalue)
+  def __rsub__(self,lvalue):
+    return Bits(lvalue,self.size)-self
 
 # operator // is used for concatenation:
   def __floordiv__(self,rvalue):
