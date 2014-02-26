@@ -2,37 +2,81 @@
 
 from bits import *
 
-def enc(K, M):
-    assert M.size==64
-    k = PC1(K)
-    blk = IP(M)
-    L = blk[0:32]
-    R = blk[32:64]
-    for r in range(16):
-        fout = F(R,k,r)
-        L = L^fout
-        L,R = R,L
-    L,R = R,L
-    C = Bits(0,64)
-    C[0:32] = L
-    C[32:64] = R
-    return IPinv(C)
+# -----------------------------------------------------------------------------
+# 3-DES with all keying options
+class TDEA(object):
+    size = 64
 
-def dec(K, C):
-    assert C.size==64
-    k = PC1(K)
-    blk = IP(C)
-    L = blk[0:32]
-    R = blk[32:64]
-    for r in range(16)[::-1]:
-        fout = F(R,k,r)
-        L = L^fout
+    def __init__(self,K1,K2=None,K3=None):
+        if len(K1)>8:
+            assert K2 is None
+            assert K3 is None
+            K1,K2,K3 = K1[:8],K1[8:],K1[16:]
+            if K3=='': K3=K1
+        if K2 is None:
+            assert K3 is None
+            K2 = K1
+        if K3 is None:
+            K3 = K1
+        self.E1 = DES(K1)
+        self.E2 = DES(K2)
+        self.E3 = DES(K3)
+
+    def enc(self,M):
+        return self.E3.enc(self.E2.dec(self.E1.enc(M)))
+
+    def dec(self,C):
+        return self.E1.dec(self.E2.enc(self.E3.dec(C)))
+
+# -----------------------------------------------------------------------------
+# DES block cipher primitive
+class DES(object):
+    size = 64
+
+    def __init__(self,K):
+        assert len(K)==self.size/8
+        self.K = Bits(K,self.size)
+
+    def enc(self,M):
+        assert len(M)==8
+        M = Bits(M)
+        K = self.K
+        assert M.size==64
+        k = PC1(K)
+        blk = IP(M)
+        L = blk[0:32]
+        R = blk[32:64]
+        for r in range(16):
+            fout = F(R,k,r)
+            L = L^fout
+            L,R = R,L
         L,R = R,L
-    L,R = R,L
-    M = Bits(0,64)
-    M[0:32] = L
-    M[32:64] = R
-    return IPinv(M)
+        C = Bits(0,64)
+        C[0:32] = L
+        C[32:64] = R
+        return hex(IPinv(C))
+
+    def dec(self,C):
+        assert len(C)==8
+        C = Bits(C)
+        K = self.K
+        assert C.size==64
+        k = PC1(K)
+        blk = IP(C)
+        L = blk[0:32]
+        R = blk[32:64]
+        for r in range(16)[::-1]:
+            fout = F(R,k,r)
+            L = L^fout
+            L,R = R,L
+        L,R = R,L
+        M = Bits(0,64)
+        M[0:32] = L
+        M[32:64] = R
+        return hex(IPinv(M))
+
+# DES internals:
+#---------------
 
 def subkey(k,r):
     C = k[0:28]

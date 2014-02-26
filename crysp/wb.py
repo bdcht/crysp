@@ -1,42 +1,47 @@
 #!/usr/bin/env python
 
-import pickle
-import random
 from des import *
 from poly import Poly
 
 # -----------------------------------------------------------------------------
-# Electronic Code Book mode of Operation
-class ECB(object):
+# The bare naked DES (lacks de-linearization and encoding ! => M2 is sparse).
+# The main weakness here is that the internal state of the whitebox holds
+# a quite simple permutation of the DES internal (L,R) state after every round.
+# This means that reducing rounds to N in the whitebox, leads to a N-round DES.
+# The most obvious way of breaking it is to patch WT.enc for doing 1 round only
+# and compute L1,R1 = IP(WT.enc(m)) ;)
+class WhiteDES(object):
 
-# encryption mode
+    def __init__(self,KT,tM1,tM2,tM3):
+        self.KT = KT
+        self.tM1 = tM1
+        self.tM2 = tM2
+        self.tM3 = tM3
+        self.size = 64
+
+    def __FX(self,v):
+        res = Bits(0,96)
+        for b in range(96):
+            res[b] = (v&self.tM2[b]).hw()%2
+        return res
+
     def enc(self,M):
-        n,p = divmod(len(M),8)
-        if p>0:
-            M += chr(8-p)*(8-p)
-            n += 1
-            print "warning: padding added %d byte(s) %x"%(8-p,8-p)
-        C = []
-        for b in range(n):
-            C.append(hex(self._cipher(Bits(M[0:8]),1)))
-            M = M[8:]
-        assert len(M)==0
-        return ''.join(C)
+        assert len(M)==8
+        M = Bits(M)
+        blk = M[self.tM1]
+        for r in range(16):
+            t = 0
+            for n in range(12):
+                nt = t+8
+                blk[t:nt] = self.KT[r][n][blk[t:nt].ival]
+                t = nt
+            blk = self.__FX(blk)
+        return hex(blk[self.tM3])
 
-# decryption mode
     def dec(self,C):
-        n,p = divmod(len(C),8)
-        assert p==0
-        M = []
-        for b in range(n):
-            M.append(hex(self._cipher(Bits(C[0:8]),-1)))
-            C = C[8:]
-        assert len(C)==0
-        return ''.join(M)
-
-# null cipher
-    def _cipher(self,B,direction):
-        return B
+        assert len(C)==8
+        C = Bits(C)
+        raise NotImplementedError
 
 # -----------------------------------------------------------------------------
 # precompute Sbox(.,K)
@@ -58,14 +63,6 @@ def table_rKS(r,K):
         rks[n] = tuple(rks[n])
     return tuple(rks)
 
-
-# -----------------------------------------------------------------------------
-# The bare naked DES (lacks de-linearization and encoding ! => M2 is sparse).
-# The main weakness here is that the internal state of the whitebox holds
-# a quite simple permutation of the DES internal (L,R) state after every round.
-# This means that reducing rounds to N in the whitebox, leads to a N-round DES.
-# The most obvious way of breaking it is to patch WT.enc for doing 1 round only
-# and compute L1,R1 = IP(WT.enc(m)) ;)
 
 def table_rKT(r,K):
     rks = table_rKS(r,K)
@@ -189,33 +186,4 @@ def table_M3():
     ER,L,R = ERLRformat()
     C = Poly(R.ival+L.ival)
     return IPinv(C).ival
-
-class WhiteDES(ECB):
-
-    def __init__(self,KT,tM1,tM2,tM3):
-        self.KT = KT
-        self.tM1 = tM1
-        self.tM2 = tM2
-        self.tM3 = tM3
-
-    def FX(self,v):
-        res = Bits(0,96)
-        for b in range(96):
-            res[b] = (v&self.tM2[b]).hw()%2
-        return res
-
-    def _cipher(self,M,d):
-        assert M.size==64
-        if d==1:
-            blk = M[self.tM1]
-            for r in range(16):
-                t = 0
-                for n in range(12):
-                    nt = t+8
-                    blk[t:nt] = self.KT[r][n][blk[t:nt].ival]
-                    t = nt
-                blk = self.FX(blk)
-            return blk[self.tM3]
-        if d==-1:
-            raise NotImplementedError
 
