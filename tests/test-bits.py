@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from crysp.bits import *
 
 x = Bits('\x01\x05\x82')
