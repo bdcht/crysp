@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from bits import *
+from crysp.bits import *
 
 # -----------------------------------------------------------------------------
 # 3-DES with all keying options

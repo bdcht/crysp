@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-from math import *
-from binascii import b2a_hex,a2b_hex
-import struct
+from math import floor,log
 
 # reverse all bits in a byte:
 def reverse_byte(b):

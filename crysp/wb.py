@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from des import *
-from poly import Poly
+from .des import *
+from .poly import Poly
 
 # -----------------------------------------------------------------------------
 # The bare naked DES (lacks de-linearization and encoding ! => M2 is sparse).

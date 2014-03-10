@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-from math import *
-from binascii import b2a_hex,a2b_hex
-import struct
-
-
 class Poly(object):
 
   ival   = None
