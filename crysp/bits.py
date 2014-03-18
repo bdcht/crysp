@@ -84,7 +84,9 @@ class Bits(object):
     else:
       raise IndexError
 
-  def int(self):
+  def int(self,sign=1):
+    if sign==-1 and self[-1]==1:
+      return -(self.ival^self.mask)-1
     return self.ival&self.mask
 
   @property
