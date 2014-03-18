@@ -77,9 +77,9 @@ class Bits(object):
     return self.size
 
   def bit(self,i):
-    if i in range(self.__sz):
+    if 0 <= i < self.__sz:
       return (self.ival>>i)&0x1L
-    elif -i in range(self.__sz+1):
+    elif 0<= -i <= self.__sz:
       return (self.ival>>(self.__sz+i))&0x1L
     else:
       raise IndexError
