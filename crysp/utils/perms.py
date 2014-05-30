@@ -1,3 +1,7 @@
+# This code is part of crysp
+# Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
+# published under GPLv2 license
+
 # recursive iterator over the group of (n-k)! permutations
 # of the last n-k elements of list l (k-deep permutations).
 # k=0 returns ALL n! permutations

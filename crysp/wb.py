@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+# This code is part of crysp
+# Copyright (C) 2011 Axel Tillequin (bdcht3@gmail.com) 
+# published under GPLv2 license
 
 from .des import *
 from .poly import Poly

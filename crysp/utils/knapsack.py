@@ -1,3 +1,7 @@
+# This code is part of crysp
+# Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
+# published under GPLv2 license
+
 # for a list l of couples (object,weight), return a
 # list of unique couples with sum of weights equal s. 
 # result is not "optimal" by any means, it is just the

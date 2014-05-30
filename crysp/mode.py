@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+
+# This code is part of crysp
+# Copyright (C) 2013 Axel Tillequin (bdcht3@gmail.com) 
+# published under GPLv2 license
+
 from crysp.padding import *
 
 import StringIO

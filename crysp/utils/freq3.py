@@ -1,4 +1,8 @@
-#-*-encoding=latin1
+#!/usr/bin/env python
+# This code is part of crysp
+# Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
+# published under GPLv2 license
+
 import matplotlib
 matplotlib.use('GTKCairo',warn=False)
 from matplotlib import pyplot
