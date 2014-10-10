@@ -58,7 +58,7 @@ class Bits(object):
     elif isinstance(v,int) or isinstance(v,long):
       self.ival = abs(v*1L)
       if self.ival>0 and (size is None):
-        self.size = int(floor(log(self.ival)/log(2)+1))
+        self.size = self.ival.bit_length()
     elif isinstance(v,list):
       self.size = len(v)
       for i,x in enumerate(v):
