@@ -313,7 +313,8 @@ class Bits(object):
       obj = Bits(rvalue)
     else:
       obj = rvalue
-    return Bits(self.bitlist()+obj.bitlist())
+    size = self.size+obj.size
+    return Bits(self.ival | obj.ival<<self.size, self.size+obj.size)
 
   def bitlist(self,dir=1):
     l = map(int,str(self))
