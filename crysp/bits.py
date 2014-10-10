@@ -61,8 +61,9 @@ class Bits(object):
         self.size = self.ival.bit_length()
     elif isinstance(v,list):
       self.size = len(v)
-      for i,x in enumerate(v):
-        self[i] = x
+      self.ival = 0
+      for x in reversed(v):
+        self.ival = (self.ival<<1)|(x&1)
     elif isinstance(v,str):
       self.load(v,bitorder)
     if size!=None: self.size = size
@@ -70,11 +71,12 @@ class Bits(object):
   def load(self,bytestr,bitorder=-1):
     self.size = len(bytestr)*8
     f = ord
-    if bitorder==-1: f = lambda c: reverse_byte(ord(c))
+    if bitorder==-1:
+      f = lambda c: reverse_byte(ord(c))
     v = 0
     l = reversed([f(c) for c in bytestr])
     for o in l:
-        v = (v<<8) | o
+      v = (v<<8) | o
     self.ival = v
 
   def __len__(self):
@@ -89,19 +91,19 @@ class Bits(object):
       raise IndexError
 
   def int(self,sign=1):
-    if sign==-1 and self[-1]==1:
+    if sign==-1 and self.bit(-1)==1:
       return -(self.ival^self.mask)-1
     return self.ival&self.mask
 
   @property
   def size(self):
-      return self.__sz
+    return self.__sz
 
   @size.setter
   def size(self,v):
-      self.__sz = v
-      self.mask = (1L<<v)-1L
-      self.ival &= self.mask
+    self.__sz = v
+    self.mask = (1L<<v)-1L
+    self.ival &= self.mask
 
   def __repr__(self):
     c = self.__class__
@@ -118,22 +120,22 @@ class Bits(object):
 
   # byte string representation, bit0 1st (crypto notation).
   def __hex__(self):
-      v = self.ival&self.mask
-      i = 0
-      s = []
-      while i<self.__sz:
-          s.append(chr(reverse_byte(v&0xff)))
-          v = v>>8
-          i += 8
-      return ''.join(s)
+    v = self.ival&self.mask
+    i = 0
+    s = []
+    while i<self.__sz:
+      s.append(chr(reverse_byte(v&0xff)))
+      v = v>>8
+      i += 8
+    return ''.join(s)
 
   def split(self,subsize):
-      l = []
-      i = 0
-      while i<self.__sz:
-          l.append(self[i:i+subsize])
-          i += subsize
-      return l
+    l = []
+    i = 0
+    while i<self.__sz:
+      l.append(self[i:i+subsize])
+      i += subsize
+    return l
 
   def todots(self):
     return '|%s|'%str(self).replace('0',' ').replace('1','.')
@@ -168,12 +170,17 @@ class Bits(object):
     if isinstance(i,int):
       return Bits(self.bit(i),1)
     elif isinstance(i,slice):
-      return Bits(self.bitlist()[i])
+      start,stop,step = i.indices(self.__sz)
+      if step==1 and stop>=start:
+        v = (self.ival&((1L<<stop)-1))>>start
+        return Bits(v,stop-start)
+      else:
+        return self[range(self.__sz)[i]]
     else:
-      s=[]
-      for x in i:
-          s.append(self.bit(x))
-      return Bits(s)
+      v = 0
+      for x in reversed(i):
+        v = (v<<1)|((self.ival>>x)&1)
+      return Bits(v,len(i))
 
 # setitem operator defines b[i], b[i:j] and b[list] which allow to affect new
 # values to these bits, from another object, int/long value or a bit list.
@@ -181,28 +188,25 @@ class Bits(object):
   def __setitem__(self,i,v):
     if isinstance(i,int):
       assert v in (0,1)
-      if i in range(self.__sz):
-        if self.bit(i)==1: self.ival -= 0x1L<<i
-        self.ival += (v&0x1L)<<i
-      elif -i in range(self.__sz+1):
-        p = self.__sz+i
-        if self.bit(p)==1: self.ival -= 0x1L<<p
-        self.ival += (v&0x1L)<<p
-      else:
-        raise IndexError
+      if   0<= i< self.__sz   : p=i
+      elif 0<=-i<(self.__sz+1): p=self.__sz+i
+      else: raise IndexError
+      if v==0: self.ival &= (self.mask^((0x1L)<<p))
+      if v==1: self.ival |= (0x1L)<<p
     else:
+      v = Bits(v)
       if isinstance(i,slice):
         start,stop,step = i.indices(self.__sz)
+        if step==1 and stop>start:
+            mask = self.mask^((1L<<stop)-1)^((1L<<start)-1)
+            self.ival = (self.ival&mask)|(v.ival<<start)
+            return
         r = range(start,stop,step)
       else:
         r = i
-      try:
-        assert len(r)==len(v)
-        for j,b in zip(r,v):
-          self[j] = b
-      except (TypeError,AssertionError):
-        for j,b in zip(r,Bits(v,len(r))):
-          self[j] = b
+      assert len(r)==len(v)
+      for j,b in zip(r,v):
+        self[j] = b
 
 # unary bitwise operators. The result is a new object which has same length.
 #------------------------------------------------------------------------------
@@ -314,7 +318,7 @@ class Bits(object):
     else:
       obj = rvalue
     size = self.size+obj.size
-    return Bits(self.ival | obj.ival<<self.size, self.size+obj.size)
+    return Bits(self.ival | obj.ival<<self.size, size)
 
   def bitlist(self,dir=1):
     l = map(int,str(self))
