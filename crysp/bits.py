@@ -57,7 +57,7 @@ class Bits(object):
       self.mask = v.mask
     elif isinstance(v,int) or isinstance(v,long):
       self.ival = abs(v*1L)
-      if self.ival>0:
+      if self.ival>0 and (size is None):
         self.size = int(floor(log(self.ival)/log(2)+1))
     elif isinstance(v,list):
       self.size = len(v)
@@ -69,11 +69,13 @@ class Bits(object):
 
   def load(self,bytestr,bitorder=-1):
     self.size = len(bytestr)*8
-    l = map(ord,bytestr)
-    i=0
+    f = ord
+    if bitorder==-1: f = lambda c: reverse_byte(ord(c))
+    v = 0
+    l = reversed([f(c) for c in bytestr])
     for o in l:
-      self[i:i+8] = Bits(o,8).bitlist(bitorder)
-      i += 8
+        v = (v<<8) | o
+    self.ival = v
 
   def __len__(self):
     return self.size
@@ -99,6 +101,7 @@ class Bits(object):
   def size(self,v):
       self.__sz = v
       self.mask = (1L<<v)-1L
+      self.ival &= self.mask
 
   def __repr__(self):
     c = self.__class__
