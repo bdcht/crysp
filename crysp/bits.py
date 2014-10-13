@@ -17,7 +17,7 @@ def unpack(istr):
     r = len(istr)
     size = r<<3
     i = 0
-    b = Bits(0,size)
+    b = 0
     for q,f in [(8,'Q'),(4,'L'),(2,'H'),(1,'B')]:
         n,r = divmod(r,q)
         if n>0:
@@ -25,9 +25,9 @@ def unpack(istr):
             qlen = q<<3
             s,istr = istr[:c],istr[c:]
             for v in struct.unpack('<%d%c'%(n,f),s):
-                b[i:i+qlen] = v
+                b |= v<<i
                 i += qlen
-        if r==0: return b
+        if r==0: return (b,size)
     raise ValueError
 
 hextab_r = ('0000','1000','0100','1100',
@@ -86,10 +86,9 @@ class Bits(object):
 
   def load(self,bytestr,bitorder=-1):
     if bitorder==1:
-      b = unpack(bytestr)
-      self.ival = b.ival
-      self.__sz = b.size
-      self.mask = b.mask
+      b,size = unpack(bytestr)
+      self.ival = b
+      self.size = size
     else:
       self.size = len(bytestr)*8
       f = lambda c: reverse_byte(ord(c))
