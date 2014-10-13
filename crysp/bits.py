@@ -85,18 +85,15 @@ class Bits(object):
     if size!=None: self.size = size
 
   def load(self,bytestr,bitorder=-1):
-    if bitorder==1:
-      b,size = unpack(bytestr)
-      self.ival = b
-      self.size = size
-    else:
-      self.size = len(bytestr)*8
+    self.size = len(bytestr)*8
+    f = ord
+    if bitorder==-1:
       f = lambda c: reverse_byte(ord(c))
-      v = 0
-      l = reversed([f(c) for c in bytestr])
-      for o in l:
-        v = (v<<8) | o
-      self.ival = v
+    v = 0
+    l = reversed([f(c) for c in bytestr])
+    for o in l:
+      v = (v<<8) | o
+    self.ival = v
 
   def __len__(self):
     return self.size
