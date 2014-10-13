@@ -2,7 +2,7 @@
 # Copyright (C) 2006-2014 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
 
-from math import floor,log
+import struct
 
 # reverse all bits in a byte:
 def reverse_byte(b):
@@ -13,6 +13,22 @@ def pack(obj,fmt='<L'):
     s = (chr(x.ival&0xff) for x in obj.split(8))
     return ''.join(s)
 
+def unpack(istr):
+    r = len(istr)
+    size = r<<3
+    i = 0
+    b = Bits(0,size)
+    for q,f in [(8,'Q'),(4,'L'),(2,'H'),(1,'B')]:
+        n,r = divmod(r,q)
+        if n>0:
+            c = n*q
+            qlen = q<<3
+            s,istr = istr[:c],istr[c:]
+            for v in struct.unpack('<%d%c'%(n,f),s):
+                b[i:i+qlen] = v
+                i += qlen
+        if r==0: return b
+    raise ValueError
 
 hextab_r = ('0000','1000','0100','1100',
             '0010','1010','0110','1110',
@@ -69,15 +85,19 @@ class Bits(object):
     if size!=None: self.size = size
 
   def load(self,bytestr,bitorder=-1):
-    self.size = len(bytestr)*8
-    f = ord
-    if bitorder==-1:
+    if bitorder==1:
+      b = unpack(bytestr)
+      self.ival = b.ival
+      self.__sz = b.size
+      self.mask = b.mask
+    else:
+      self.size = len(bytestr)*8
       f = lambda c: reverse_byte(ord(c))
-    v = 0
-    l = reversed([f(c) for c in bytestr])
-    for o in l:
-      v = (v<<8) | o
-    self.ival = v
+      v = 0
+      l = reversed([f(c) for c in bytestr])
+      for o in l:
+        v = (v<<8) | o
+      self.ival = v
 
   def __len__(self):
     return self.size
