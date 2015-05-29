@@ -28,13 +28,21 @@ class Serpent(object):
     def enc(self,M):
         assert len(M)==16
         R = Bits(M,bitorder=1)
-        C = _encrypt(self.keys,R)
+        B = IP(R)
+        for i in range(31):
+            B = L(S(i%8,B^self.keys[i]))
+        B = S(31%8,B^self.keys[31])^self.keys[32]
+        C = FP(B)
         return pack(C)
 
     def dec(self,C):
         assert len(C)==16
         R = Bits(C,bitorder=1)
-        M = _decrypt(self.keys,R)
+        B = IP(R)
+        B = Sinv(31%8,B^self.keys[31])^self.keys[32]
+        for i in range(30,-1,-1):
+            B = Linv(Sinv(i%8,B^self.keys[i]))
+        M = FP(B)
         return pack(M)
 
 # Serpent internals:
@@ -139,17 +147,3 @@ def Linv(X):
     X[2] = ror(X[2],3)
     X[0] = ror(X[0],13)
     return concat(X)
-
-def _encrypt(keys,P):
-    B = IP(P)
-    for i in range(31):
-        B = L(S(i,B^keys[i]))
-    B = S(31,B^keys[31])^keys[32]
-    return FP(B)
-
-def _decrypt(keys,C):
-    B = IP(C)
-    B = Sinv(31,B^keys[31])^keys[32]
-    for i in range(30,-1,-1):
-        B = Linv(Sinv(i,B^keys[i]))
-    return FP(B)
