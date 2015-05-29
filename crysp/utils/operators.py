@@ -13,7 +13,5 @@ def ror(x,n):
 
 # concatenation:
 def concat(L):
-    res = Bits(0,0)
-    for x in L:
-        res = res//x
-    return res
+    if len(L)==1: return L[0]
+    return reduce(lambda x,y: x//y, L)
