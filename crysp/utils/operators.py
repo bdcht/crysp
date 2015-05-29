@@ -10,3 +10,10 @@ def rol(x,n):
 def ror(x,n):
     return (x>>n | x<<(x.size-n))
 
+
+# concatenation:
+def concat(L):
+    res = Bits(0,0)
+    for x in L:
+        res = res//x
+    return res
