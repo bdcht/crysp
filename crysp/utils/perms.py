@@ -1,5 +1,5 @@
 # This code is part of crysp
-# Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
+# Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com)
 # published under GPLv2 license
 
 # recursive iterator over the group of (n-k)! permutations
