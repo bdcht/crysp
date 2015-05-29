@@ -23,32 +23,32 @@ class Serpent(object):
         for i in range(132):
             wi = rol((prekey[-8]^prekey[-5]^prekey[-3]^prekey[-1]^phi^i),11)
             prekey.append(wi)
-        self.keys = keysched(prekey)
+        self.keys = _keysched(prekey)
 
     def enc(self,M):
         assert len(M)==16
         R = Bits(M,bitorder=1)
-        B = IP(R)
+        B = _IP(R)
         for i in range(31):
-            B = L(S(i%8,B^self.keys[i]))
-        B = S(31%8,B^self.keys[31])^self.keys[32]
-        C = FP(B)
+            B = _L(_S(i%8,B^self.keys[i]))
+        B = _S(31%8,B^self.keys[31])^self.keys[32]
+        C = _FP(B)
         return pack(C)
 
     def dec(self,C):
         assert len(C)==16
         R = Bits(C,bitorder=1)
-        B = IP(R)
-        B = Sinv(31%8,B^self.keys[31])^self.keys[32]
+        B = _IP(R)
+        B = _Sinv(31%8,B^self.keys[32])^self.keys[31]
         for i in range(30,-1,-1):
-            B = Linv(Sinv(i%8,B^self.keys[i]))
-        M = FP(B)
+            B = _Sinv(i%8,_Linv(B))^self.keys[i]
+        M = _FP(B)
         return pack(M)
 
 # Serpent internals:
 #-------------------
 
-def S(i,X):
+def _S(i,X):
     assert 0<=i<8
     assert X.size==128
     boxes = [
@@ -64,7 +64,7 @@ def S(i,X):
     Sx = [Bits(boxes[i][x],4) for x in X.split(4)]
     return concat(Sx)
 
-def Sinv(i,X):
+def _Sinv(i,X):
     assert 0<=i<8
     assert X.size==128
     boxes = [
@@ -80,7 +80,7 @@ def Sinv(i,X):
     Sx = [Bits(boxes[i][x],4) for x in X.split(4)]
     return concat(Sx)
 
-def IP(X):
+def _IP(X):
     assert X.size==128
     table = [
         0, 32, 64, 96, 1, 33, 65, 97, 2, 34, 66, 98, 3, 35, 67, 99,
@@ -94,7 +94,7 @@ def IP(X):
     ]
     return X[table]
 
-def FP(X):
+def _FP(X):
     assert X.size==128
     table = [
         0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60,
@@ -108,17 +108,17 @@ def FP(X):
     ]
     return X[table]
 
-def keysched(prekey):
+def _keysched(prekey):
     keys = []
     k = 0
     for r in range(35,2,-1):
         Kr = concat(prekey[k:k+4])
         k+=4
-        keys.append(IP(S(r%8,Kr)))
+        keys.append(_IP(_S(r%8,Kr)))
     assert len(keys)==33
     return keys
 
-def L(X):
+def _L(X):
     assert X.size==128
     X = X.split(32)
     X[0] = rol(X[0],13)
@@ -133,16 +133,16 @@ def L(X):
     X[2] = rol(X[2],22)
     return concat(X)
 
-def Linv(X):
+def _Linv(X):
     assert X.size==128
     X = X.split(32)
     X[2] = ror(X[2],22)
     X[0] = ror(X[0],5)
-    X[2] = X[2]^X[3]^(X[1]<<7)
+    X[2] = X[2]^X[3]^(X[1]>>7)
     X[0] = X[0]^X[1]^X[3]
     X[3] = ror(X[3],7)
     X[1] = ror(X[1],1)
-    X[3] = X[3]^X[2]^(X[0]<<3)
+    X[3] = X[3]^X[2]^(X[0]>>3)
     X[1] = X[1]^X[0]^X[2]
     X[2] = ror(X[2],3)
     X[0] = ror(X[0],13)
