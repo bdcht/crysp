@@ -28,11 +28,11 @@ class Serpent(object):
     def enc(self,M):
         assert len(M)==16
         R = Bits(M,bitorder=1)
-        B = _IP(R)
+        B = R
         for i in range(31):
             B = _L(_S(i%8,B^self.keys[i]))
         B = _S(31%8,B^self.keys[31])^self.keys[32]
-        C = _FP(B)
+        C = B
         return pack(C)
 
     def dec(self,C):
@@ -61,8 +61,8 @@ def _S(i,X):
        [ 7, 2,12, 5, 8, 4, 6,11,14, 9, 1,15,13, 3,10, 0],
        [ 1,13,15, 0,14, 8, 2,11, 7, 4,12,10, 9, 3, 5, 6],
     ]
-    Sx = [Bits(boxes[i][x],4) for x in X.split(4)]
-    return concat(Sx)
+    Sx = [Bits(boxes[i][x],4) for x in _IP(X).split(4)]
+    return _FP(concat(Sx))
 
 def _Sinv(i,X):
     assert 0<=i<8
@@ -110,11 +110,11 @@ def _FP(X):
 
 def _keysched(prekey):
     keys = []
-    k = 0
+    k = 8
     for r in range(35,2,-1):
         Kr = concat(prekey[k:k+4])
         k+=4
-        keys.append(_IP(_S(r%8,Kr)))
+        keys.append(_S(r%8,Kr))
     assert len(keys)==33
     return keys
 
@@ -138,11 +138,11 @@ def _Linv(X):
     X = X.split(32)
     X[2] = ror(X[2],22)
     X[0] = ror(X[0],5)
-    X[2] = X[2]^X[3]^(X[1]>>7)
+    X[2] = X[2]^X[3]^(X[1]<<7)
     X[0] = X[0]^X[1]^X[3]
     X[3] = ror(X[3],7)
     X[1] = ror(X[1],1)
-    X[3] = X[3]^X[2]^(X[0]>>3)
+    X[3] = X[3]^X[2]^(X[0]<<3)
     X[1] = X[1]^X[0]^X[2]
     X[2] = ror(X[2],3)
     X[0] = ror(X[0],13)
