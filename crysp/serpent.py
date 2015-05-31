@@ -38,11 +38,11 @@ class Serpent(object):
     def dec(self,C):
         assert len(C)==16
         R = Bits(C,bitorder=1)
-        B = _IP(R)
+        B = R
         B = _Sinv(31%8,B^self.keys[32])^self.keys[31]
         for i in range(30,-1,-1):
             B = _Sinv(i%8,_Linv(B))^self.keys[i]
-        M = _FP(B)
+        M = B
         return pack(M)
 
 # Serpent internals:
@@ -77,8 +77,8 @@ def _Sinv(i,X):
        [15,10, 1,13, 5, 3, 6, 0, 4, 9,14, 7, 2,12, 8,11],
        [ 3, 0, 6,13, 9,14,15, 8, 5,12,11, 7,10, 1, 4, 2],
     ]
-    Sx = [Bits(boxes[i][x],4) for x in X.split(4)]
-    return concat(Sx)
+    Sx = [Bits(boxes[i][x],4) for x in _IP(X).split(4)]
+    return _FP(concat(Sx))
 
 def _IP(X):
     assert X.size==128
