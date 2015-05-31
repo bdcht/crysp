@@ -10,3 +10,8 @@ def rol(x,n):
 def ror(x,n):
     return (x>>n | x<<(x.size-n))
 
+
+# concatenation:
+def concat(L):
+    if len(L)==1: return L[0]
+    return reduce(lambda x,y: x//y, L)

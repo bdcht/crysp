@@ -111,6 +111,9 @@ class Bits(object):
       return -(self.ival^self.mask)-1
     return self.ival&self.mask
 
+  def __index__(self):
+    return self.int()
+
   @property
   def size(self):
     return self.__sz

@@ -98,8 +98,8 @@ def F(R,k,r):
     for n in range(8):
         nri,nro = ri+6,ro+4
         x = s[ri:nri]
-        i = x[(5,0)].ival
-        j = x[(4,3,2,1)].ival
+        i = x[(5,0)]
+        j = x[(4,3,2,1)]
         Z[ro:nro] = Bits(S(n,(i<<4)+j),4)[::-1]
         ri,ro = nri,nro
     return P(Z)
