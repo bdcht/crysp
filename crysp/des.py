@@ -67,7 +67,7 @@ class DES(object):
         blk = IP(C)
         L = blk[0:32]
         R = blk[32:64]
-        for r in range(16)[::-1]:
+        for r in reversed(range(16)):
             fout = F(R,k,r)
             L = L^fout
             L,R = R,L
@@ -98,14 +98,14 @@ def F(R,k,r):
     for n in range(8):
         nri,nro = ri+6,ro+4
         x = s[ri:nri]
-        i = x[(5,0)]
-        j = x[(4,3,2,1)]
-        Z[ro:nro] = Bits(S(n,(i<<4)+j),4)[::-1]
+        i = x[(5,0)].ival
+        j = x[(4,3,2,1)].ival
+        Z[ro:nro] = Bits(S(n,(i<<4)+j),4)[::-1].ival
         ri,ro = nri,nro
     return P(Z)
 
 def IP(M):
-    assert M.size==64
+    assert len(M)==64
     table = [57, 49, 41, 33, 25, 17, 9,  1,
     	     59, 51, 43, 35, 27, 19, 11, 3,
     	     61, 53, 45, 37, 29, 21, 13, 5,
@@ -117,7 +117,7 @@ def IP(M):
     return M[table]
 
 def IPinv(M):
-    assert M.size==64
+    assert len(M)==64
     table = [39,  7, 47, 15, 55, 23, 63, 31,
 	     38,  6, 46, 14, 54, 22, 62, 30,
 	     37,  5, 45, 13, 53, 21, 61, 29,
@@ -140,7 +140,7 @@ def PC1(K):
     return  K[table]
 
 def PC2(K):
-    assert K.size==56
+    assert len(K)==56
     table = [13, 16, 10, 23,  0,  4,
 	      2, 27, 14,  5, 20,  9,
 	     22, 18, 11,  3, 25,  7,
@@ -152,7 +152,7 @@ def PC2(K):
     return  K[table]
 
 def E(L):
-    assert L.size==32
+    assert len(L)==32
     table = [31,  0,  1,  2,  3,  4,
 	      3,  4,  5,  6,  7,  8,
 	      7,  8,  9, 10, 11, 12,
@@ -164,7 +164,7 @@ def E(L):
     return L[table]
 
 def P(s):
-    assert s.size==32
+    assert len(s)==32
     table = [15, 6, 19, 20, 28, 11,
 	     27, 16, 0, 14, 22, 25,
 	     4, 17, 30, 9, 1, 7,
