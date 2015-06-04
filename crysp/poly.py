@@ -178,6 +178,8 @@ class Poly(object):
       res.ival = self.ival+res.ival
       return res
 
-  def poly(self):
-      return self.ival[:]
+  def split(self,newsize):
+      l = []
+      for x in self: l.extend(x.split(newsize))
+      return Poly([x.int() for x in l],size=newsize)
 
