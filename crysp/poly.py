@@ -41,7 +41,7 @@ class Poly(object):
           mask = -1
       if isinstance(v,Poly):
           self.ival = [x&mask for x in v.ival]
-      elif isinstance(v,int):
+      elif isinstance(v,(int,long)):
           self.ival = [v&mask]
       elif isinstance(v,(list,str)):
           self.ival = [x&mask for x in v]
@@ -95,7 +95,7 @@ class Poly(object):
 # bit values as a long (0L,1L) or a list of such longs.
 #------------------------------------------------------------------------------
   def __getitem__(self,i):
-      if isinstance(i,(int,slice)):
+      if isinstance(i,(int,long,slice)):
           return Poly(self.ival[i],self.size)
       else:
           return Poly([self.ival[j] for j in i],self.size)
@@ -105,7 +105,7 @@ class Poly(object):
 #------------------------------------------------------------------------------
   def __setitem__(self,i,v):
       if isinstance(v,Bits): v=v.int()
-      if isinstance(i,int):
+      if isinstance(i,(int,long)):
           self.ival[i] = v&self.mask
       else:
           if isinstance(i,slice):
