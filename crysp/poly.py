@@ -6,8 +6,25 @@ from crysp.bits import *
 
 class Poly(object):
 
-  ival   = None
-  mask   = 0
+  def __init__(self,v,size=0,dim=0):
+      if size:
+          mask = (1<<size)-1
+      else:
+          mask = -1
+      if isinstance(v,Poly):
+          mask = v.mask
+          self.ival = [x&mask for x in v.ival]
+      elif isinstance(v,(int,long)):
+          self.ival = [v&mask]
+      elif isinstance(v,(list,str)):
+          self.ival = [x&mask for x in v]
+      elif isinstance(v,str):
+          mask = 0xff
+          self.ival = [x&mask for x in v]
+      else:
+          raise TypeError
+      self.mask = mask
+      if dim: self.dim = dim
 
   @property
   def dim(self):
@@ -33,25 +50,6 @@ class Poly(object):
   def size(self):
       if self.mask==-1: return 0
       return Bits(self.mask).size
-
-  def __init__(self,v,size=0,dim=0):
-      if size:
-          mask = (1<<self.size)-1
-      else:
-          mask = -1
-      if isinstance(v,Poly):
-          self.ival = [x&mask for x in v.ival]
-      elif isinstance(v,(int,long)):
-          self.ival = [v&mask]
-      elif isinstance(v,(list,str)):
-          self.ival = [x&mask for x in v]
-      elif isinstance(v,str):
-          mask = 0xff
-          self.ival = [x&mask for x in v]
-      else:
-          raise TypeError
-      self.mask = mask
-      if dim: self.dim = dim
 
   def __len__(self):
       return self.dim
