@@ -32,10 +32,19 @@ def columnround(x):
 def doubleround(x):
     return rowround(columnround(x))
 
-def salsa20_hash(m):
+def Salsa20(m):
     L = Bits(m,bitorder=1).split(32)
     X = Poly([x.int() for x in L],size=32)
     Z = X
     for n in range(10):
         Z = doubleround(Z)
     return ''.join([pack(z) for z in (X+Z)])
+
+sigma = ['expa', 'nd 3', '2-by', 'te k']
+tau   = ['expa', 'nd 1', '6-by', 'te k']
+
+def Salsa20_k32(k0,k1,n):
+    return Salsa20(sigma[0]+k0+sigma[1]+n+sigma[2]+k1+sigma[3])
+
+def Salsa20_k16(k,n):
+    return Salsa20(tau[0]+k+tau[1]+n+tau[2]+k+tau[3])
