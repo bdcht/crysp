@@ -32,9 +32,9 @@ def columnround(x):
 def doubleround(x):
     return rowround(columnround(x))
 
-def _Salsa20(X):
+def _Salsa20(X,dround=10):
     Z = X
-    for n in range(10):
+    for n in range(dround):
         Z = doubleround(Z)
     return X+Z
 
@@ -43,7 +43,7 @@ _tau   = [Bits(x,bitorder=1) for x in ['expa', 'nd 1', '6-by', 'te k']]
 
 class Salsa20(object):
 
-    def __init__(self,K=None):
+    def __init__(self,K=None,rounds=20):
         self.K = K
         self.p = Poly(0,size=32,dim=16)
         if K is not None:
@@ -56,6 +56,8 @@ class Salsa20(object):
             self.p[0,5,10,15] = consts
             self.p[1:5] = self.K[0].split(32)
             self.p[11:15] = self.K[1].split(32)
+        assert rounds>0 and rounds&1==0
+        self.dround = rounds>>1
 
     def hash(self,m):
         L = Bits(m,bitorder=1).split(32)
@@ -70,7 +72,7 @@ class Salsa20(object):
         i = Bits(0,size=64)
         while i<maxlen:
             self.p[8:10] = i.split(32)
-            yield _Salsa20(self.p)
+            yield _Salsa20(self.p,dround=self.dround)
 
     def enc(self,v,m):
         C = []
