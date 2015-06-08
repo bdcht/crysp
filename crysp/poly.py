@@ -16,11 +16,11 @@ class Poly(object):
           self.ival = [x&mask for x in v.ival]
       elif isinstance(v,(int,long)):
           self.ival = [v&mask]
-      elif isinstance(v,(list,str)):
+      elif isinstance(v,list):
           self.ival = [x&mask for x in v]
       elif isinstance(v,str):
           mask = 0xff
-          self.ival = [x&mask for x in v]
+          self.ival = [ord(x) for x in v]
       else:
           raise TypeError
       self.mask = mask
@@ -42,6 +42,7 @@ class Poly(object):
               self.ival+=[0]*(dim-s)
       else:
           self.ival=[0]*dim
+
   @dim.deleter
   def dim(self):
       self.ival = None
@@ -179,6 +180,7 @@ class Poly(object):
       return res
 
   def split(self,newsize):
+      if newsize==self.size: return self
       l = []
       for x in self: l.extend(x.split(newsize))
       return Poly([x.int() for x in l],size=newsize)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # This code is part of crysp
-# Copyright (C) 2012 Axel Tillequin (bdcht3@gmail.com) 
+# Copyright (C) 2012 Axel Tillequin (bdcht3@gmail.com)
 # published under GPLv2 license
 
 from crysp.poly import *
@@ -32,19 +32,58 @@ def columnround(x):
 def doubleround(x):
     return rowround(columnround(x))
 
-def Salsa20(m):
-    L = Bits(m,bitorder=1).split(32)
-    X = Poly([x.int() for x in L],size=32)
+def _Salsa20(X):
     Z = X
     for n in range(10):
         Z = doubleround(Z)
-    return ''.join([pack(z) for z in (X+Z)])
+    return X+Z
 
-sigma = ['expa', 'nd 3', '2-by', 'te k']
-tau   = ['expa', 'nd 1', '6-by', 'te k']
+_sigma = [Bits(x,bitorder=1) for x in ['expa', 'nd 3', '2-by', 'te k']]
+_tau   = [Bits(x,bitorder=1) for x in ['expa', 'nd 1', '6-by', 'te k']]
 
-def Salsa20_k32(k0,k1,n):
-    return Salsa20(sigma[0]+k0+sigma[1]+n+sigma[2]+k1+sigma[3])
+class Salsa20(object):
 
-def Salsa20_k16(k,n):
-    return Salsa20(tau[0]+k+tau[1]+n+tau[2]+k+tau[3])
+    def __init__(self,K=None):
+        self.K = K
+        self.p = Poly(0,size=32,dim=16)
+        if K is not None:
+            assert isinstance(K,Bits) and K.size in (128,256)
+            self.K = K.split(128)
+            consts = _sigma
+            if len(self.K)==1:
+                self.K.append(self.K[0])
+                consts = _tau
+            self.p[0,5,10,15] = consts
+            self.p[1:5] = self.K[0].split(32)
+            self.p[11:15] = self.K[1].split(32)
+
+    def hash(self,m):
+        L = Bits(m,bitorder=1).split(32)
+        X = Poly([x.int() for x in L],size=32)
+        return ''.join([pack(z) for z in _Salsa20(X)])
+
+    def keystream(self,v):
+        assert self.K is not None
+        assert isinstance(v,Bits) and v.size==64
+        self.p[6:8] = v.split(32)
+        maxlen = 1L<<64
+        i = Bits(0,size=64)
+        while i<maxlen:
+            self.p[8:10] = i.split(32)
+            yield _Salsa20(self.p)
+
+    def enc(self,v,m):
+        C = []
+        p = 0
+        for x in self.keystream(v):
+            b = m[p:p+64]
+            if len(b)==0: break
+            x = x.split(8)
+            x.dim = len(b)
+            c = x^Poly(b)
+            C.append(''.join([chr(x) for x in c.ival]))
+            p += 64
+        return ''.join(C)
+
+    def dec(self,v,c):
+        return self.enc(v,c)
