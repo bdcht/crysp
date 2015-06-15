@@ -7,41 +7,15 @@
 from crysp.poly import *
 from crysp.utils.operators import *
 
-
-_rM    = [0,1,2,3,5,6,7,4,10,11,8,9,15,12,13,14]
-_rMinv = [_rM.index(x) for x in range(16)]
-
-_cM    = [0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15]
-_cMinv = [_cM.index(x) for x in range(16)]
-
-def quarterround(y):
-    z1 = y[1]^rol(y[0]+y[3],7 )
-    z2 = y[2]^rol(z1  +y[0],9 )
-    z3 = y[3]^rol(z2  +z1  ,13)
-    z0 = y[0]^rol(z3  +z2  ,18)
-    return concat([z0,z1,z2,z3])
-
-def rowround(y):
-    yM = y[_rM]
-    z = concat([quarterround(yM[i:i+4]) for i in range(0,16,4)])
-    return z[_rMinv]
-
-def columnround(x):
-    return rowround(x[_cM])[_cMinv]
-
-def doubleround(x):
-    return rowround(columnround(x))
-
-def _Salsa20(X,dround=10):
-    Z = X
-    for n in range(dround):
-        Z = doubleround(Z)
-    return X+Z
-
-_sigma = [Bits(x,bitorder=1) for x in ['expa', 'nd 3', '2-by', 'te k']]
-_tau   = [Bits(x,bitorder=1) for x in ['expa', 'nd 1', '6-by', 'te k']]
-
 class Salsa20(object):
+    rM    = [0,1,2,3,5,6,7,4,10,11,8,9,15,12,13,14]
+    rMinv = [rM.index(x) for x in range(16)]
+
+    cM    = [0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15]
+    cMinv = [cM.index(x) for x in range(16)]
+
+    sigma = [Bits(x,bitorder=1) for x in ['expa', 'nd 3', '2-by', 'te k']]
+    tau   = [Bits(x,bitorder=1) for x in ['expa', 'nd 1', '6-by', 'te k']]
 
     def __init__(self,K=None,rounds=20):
         self.K = K
@@ -49,10 +23,10 @@ class Salsa20(object):
         if K is not None:
             assert isinstance(K,Bits) and K.size in (128,256)
             self.K = K.split(128)
-            consts = _sigma
+            consts = self.sigma
             if len(self.K)==1:
                 self.K.append(self.K[0])
-                consts = _tau
+                consts = self.tau
             self.p[0,5,10,15] = consts
             self.p[1:5] = self.K[0].split(32)
             self.p[11:15] = self.K[1].split(32)
@@ -62,7 +36,7 @@ class Salsa20(object):
     def hash(self,m):
         L = Bits(m,bitorder=1).split(32)
         X = Poly([x.int() for x in L],size=32)
-        return ''.join([pack(z) for z in _Salsa20(X)])
+        return ''.join([pack(z) for z in self.core(X)])
 
     def keystream(self,v):
         assert self.K is not None
@@ -72,7 +46,8 @@ class Salsa20(object):
         i = 0L
         while i<maxlen:
             self.p[8:10] = (i&0xffffffffL,i>>32)
-            yield _Salsa20(self.p,dround=self.dround)
+            yield self.core(self.p,dround=self.dround)
+            i += 1
 
     def enc(self,v,m):
         C = []
@@ -89,3 +64,27 @@ class Salsa20(object):
 
     def dec(self,v,c):
         return self.enc(v,c)
+
+    def quarterround(self,y):
+        z1 = y[1]^rol(y[0]+y[3],7 )
+        z2 = y[2]^rol(z1  +y[0],9 )
+        z3 = y[3]^rol(z2  +z1  ,13)
+        z0 = y[0]^rol(z3  +z2  ,18)
+        return concat([z0,z1,z2,z3])
+
+    def rowround(self,y):
+        yM = y[self.rM]
+        z = concat([self.quarterround(yM[i:i+4]) for i in range(0,16,4)])
+        return z[self.rMinv]
+
+    def columnround(self,x):
+        return self.rowround(x[self.cM])[self.cMinv]
+
+    def doubleround(self,x):
+        return self.rowround(self.columnround(x))
+
+    def core(self,X,dround=10):
+        Z = X
+        for n in range(dround):
+            Z = self.doubleround(Z)
+        return X+Z
