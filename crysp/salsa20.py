@@ -69,9 +69,9 @@ class Salsa20(object):
         assert isinstance(v,Bits) and v.size==64
         self.p[6:8] = v.split(32)
         maxlen = 1L<<64
-        i = Bits(0,size=64)
+        i = 0L
         while i<maxlen:
-            self.p[8:10] = i.split(32)
+            self.p[8:10] = (i&0xffffffffL,i>>32)
             yield _Salsa20(self.p,dround=self.dround)
 
     def enc(self,v,m):
