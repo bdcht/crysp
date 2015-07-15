@@ -1,2 +1,6 @@
 *.pyc
 build/
+.tox/
+TODO
+*.egg-info/
+tests/vectors/
