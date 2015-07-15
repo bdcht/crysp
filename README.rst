@@ -1,6 +1,20 @@
-==============================
-Crysp-"Crypto Stuff in Python"
-==============================
+=====
+Crysp
+=====
+----------------------
+Crypto Stuff in Python
+----------------------
+
+.. image:: https://travis-ci.org/bdcht/crysp.svg?branch=master
+    :target: https://travis-ci.org/bdcht/crysp
+
++-----------+-----------------------------------+
+| Status:   | Under Development                 |
++-----------+-----------------------------------+
+| Location: | https://github.com/bdcht/crysp    |
++-----------+-----------------------------------+
+| Version:  | 0.2                               |
++-----------+-----------------------------------+
 
 Description
 ===========

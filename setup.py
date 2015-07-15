@@ -1,17 +1,30 @@
-#! /usr/bin/env python
-
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(
-    name = 'crysp',
-    version = '0.1',
-    packages=['crysp',
-              'crysp/utils'],
-    # Metadata
-    author = 'Axel Tillequin',
-    author_email = 'bdcht3@gmail.com',
-    description = 'crypto stuff in python',
-    license = 'GPLv2',
-    # keywords = '',
-    url = 'https://github.com/bdcht/crysp',
+    name='crysp',
+    version='0.3',
+    description='Crypto Stuff in Python',
+    long_description='some of my crypto-related facilities...',
+    url='https://github.com/bdcht/crysp',
+    author='Axel Tillequin',
+    author_email='bdcht3@gmail.com',
+    license='GPLv2',
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+        'Programming Language :: Python :: 2.7',
+    ],
+    keywords='cryptography development',
+    packages=find_packages(),
+    install_requires=[],
+    extras_require={
+      'test': ['pytest'],
+      'full': ['matplotlib','grandalf'],
+    },
+    package_data={
+    },
+    data_files=[],
+    entry_points={
+    },
 )
