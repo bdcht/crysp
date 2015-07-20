@@ -1,5 +1,5 @@
 # This code is part of crysp
-# Copyright (C) 2006-2014 Axel Tillequin (bdcht3@gmail.com) 
+# Copyright (C) 2006-2014 Axel Tillequin (bdcht3@gmail.com)
 # published under GPLv2 license
 
 import struct
@@ -9,8 +9,9 @@ def reverse_byte(b):
     return (b * 0x0202020202L & 0x010884422010L) % 1023
 
 def pack(obj,fmt='<L'):
-    assert fmt in ['<L']
+    assert fmt in ['<L','>L']
     s = (chr(x.ival&0xff) for x in obj.split(8))
+    if fmt=='>L': s = reversed(list(s))
     return ''.join(s)
 
 def unpack(istr):
