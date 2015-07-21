@@ -20,6 +20,11 @@ def test_sha1_002():
     assert b[0]=='\x80' and b[-2]==chr(0x2)
     assert sha1.update(b) == href
 
+@pytest.mark.parametrize('m,h',[('abc','0164b8a914cd2a5e74c4f7ff082c4d97f1edf880')])
+def test_sha1_003(m,h):
+    sha0 = SHA1(version=0)
+    assert sha0(m).encode('hex') == h
+
 vectors_sha256 = [(""    ,"E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"),
                   ("a"   ,"CA978112CA1BBDCAFAC231B39A23DC4DA786EFF8147C4E72B9807785AFEE48BB"),
                   ("abc" ,"BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD"),

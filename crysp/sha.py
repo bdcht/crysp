@@ -66,7 +66,7 @@ class SHA1(object):
             a,b,c,d,e = self.H
             assert len(W)==16
             for t in range(16,80):
-                w = rol(W[t-3]^W[t-8]^W[t-14]^W[t-16],1)
+                w = rol(W[t-3]^W[t-8]^W[t-14]^W[t-16],self.version)
                 W.append(w)
             for r in range(80):
                 T = rol(a,5)+self.ft[r](b,c,d)+e+self.K[r]+W[r]
