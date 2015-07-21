@@ -1,4 +1,4 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 # This code is part of crysp
 # Copyright (C) 2008 Axel Tillequin (bdcht3@gmail.com)
@@ -43,7 +43,7 @@ class SHA1(object):
     def iterblocks(self,M):
         P = StringIO.StringIO(M)
         osize = self.blocksize/8
-        fmt = '>16L' if self.wsize==32 else '>8Q'
+        fmt = '>16L' if self.wsize==32 else '>16Q'
         Pi = P.read(osize)
         bitlen = 0
         while len(Pi)==osize:
@@ -82,22 +82,24 @@ class SHA1(object):
             self.H[4] += e
         return ''.join([pack(h,'>L') for h in self.H])
 
-class SHA2(object):
+class SHA2(SHA1):
     def __init__(self,size,t=0):
         assert size in (224,256,384,512)
         self.size = size
+        self.outlen = self.size/8
         self.version = 2
         if t>0:
             assert self.size==512
             assert t in (224,256)
+            self.outlen = t/8
         # set functions and constants:
         if self.size  in (224,256):
             self.blocksize = 512
             self.wsize = 32
-            self.Sigma_0 = lambda x,y,z: ror(x,2)^ror(x,13)^ror(x,22)
-            self.Sigma_1 = lambda x,y,z: ror(x,6)^ror(x,11)^ror(x,25)
-            self.sigma_0 = lambda x,y,z: ror(x,7)^ror(x,18)^ror(x,3)
-            self.sigma_1 = lambda x,y,z: ror(x,17)^ror(x,19)^ror(x,10)
+            self.Sigma_0 = lambda x: ror(x,2)^ror(x,13)^ror(x,22)
+            self.Sigma_1 = lambda x: ror(x,6)^ror(x,11)^ror(x,25)
+            self.sigma_0 = lambda x: ror(x,7)^ror(x,18)^(x>>3)
+            self.sigma_1 = lambda x: ror(x,17)^ror(x,19)^(x>>10)
             self.K = [int(s,16) for s in '''
             428a2f98 71374491 b5c0fbcf e9b5dba5 3956c25b 59f111f1 923f82a4 ab1c5ed5
             d807aa98 12835b01 243185be 550c7dc3 72be5d74 80deb1fe 9bdc06a7 c19bf174
@@ -111,10 +113,10 @@ class SHA2(object):
         elif self.size>256:
             self.blocksize = 1024
             self.wsize = 64
-            self.Sigma_0 = lambda x,y,z: ror(x,28)^ror(x,34)^ror(x,39)
-            self.Sigma_1 = lambda x,y,z: ror(x,14)^ror(x,18)^ror(x,41)
-            self.sigma_0 = lambda x,y,z: ror(x,1)^ror(x,8)^ror(x,7)
-            self.sigma_1 = lambda x,y,z: ror(x,19)^ror(x,61)^ror(x,6)
+            self.Sigma_0 = lambda x: ror(x,28)^ror(x,34)^ror(x,39)
+            self.Sigma_1 = lambda x: ror(x,14)^ror(x,18)^ror(x,41)
+            self.sigma_0 = lambda x: ror(x,1)^ror(x,8)^(x>>7)
+            self.sigma_1 = lambda x: ror(x,19)^ror(x,61)^(x>>6)
             self.K = [int(s,16) for s in '''
             428a2f98d728ae22 7137449123ef65cd b5c0fbcfec4d3b2f e9b5dba58189dbbc
             3956c25bf348b538 59f111f1b605d019 923f82a4af194f9b ab1c5ed5da6d8118
@@ -137,54 +139,82 @@ class SHA2(object):
             28db77f523047d84 32caab7b40c72493 3c9ebe0a15c9bebc 431d67c49c100d4c
             4cc5d4becb3e42b6 597f299cfc657e2a 5fcb6fab3ad6faec 6c44198c4a475817
             '''.split()]
-        self.initstate(t)
+        self.initstate()
 
-        def initstate(self,t=None):
-            if t is not None: self.t = t
-            t = self.t
-            if self.size==224 or t==224:
-                H = [
-                     0xc1059ed8 if not t else 0x8C3D37C819544DA2,
-                     0x367cd507 if not t else 0x73E1996689DCD4D6,
-                     0x3070dd17 if not t else 0x1DFAB7AE32FF9C82,
-                     0xf70e5939 if not t else 0x679DD514582F9FCF,
-                     0xffc00b31 if not t else 0x0F6D2B697BD44DA8,
-                     0x68581511 if not t else 0x77E36F7304C48942,
-                     0x64f98fa7 if not t else 0x3F9D85A86A1D36C8,
-                     0xbefa4fa4 if not t else 0x1112E6AD91D692A1,
-                    ]
-            elif self.size==256 or t==256:
-                H = [
-                     0x6a09e667 if not t else 0x22312194FC2BF72C,
-                     0xbb67ea85 if not t else 0x9F555FA3C84C64C2,
-                     0x3c6ef372 if not t else 0x2393B86B6F53B151,
-                     0xa54ff53a if not t else 0x963877195940EABD,
-                     0x510e527f if not t else 0x96283EE2A88EFFE3,
-                     0x9b05688c if not t else 0xBE5E1E2553863992,
-                     0x1f83d9ab if not t else 0x2B0199FC2C85B8AA,
-                     0x5be0cd19 if not t else 0x0EB72DDC81C52CA2,
-                    ]
-            elif self.size==384:
-                H = [
-                     0xcbbb9d5dc1059ed8,
-                     0x629a292a367cd507,
-                     0x9159015a3070dd17,
-                     0x152fecd8f70e5939,
-                     0x67332667ffc00b31,
-                     0x8eb44a8768581511,
-                     0xdb0c2e0d64f98fa7,
-                     0x47b5481dbefa4fa4,
-                    ]
-            elif self.size==512:
-                H = [
-                     0x6a09e667f3bcc908,
-                     0xbb67ae8584caa73b,
-                     0x3c6ef372fe94f82b,
-                     0xa54ff53a5f1d36f1,
-                     0x510e527fade682d1,
-                     0x9b05688c2b3e6c1f,
-                     0x1f83d9abfb41bd6b,
-                     0x5be0cd19137e2179,
-                    ]
-            self.H = [Bits(v,self.wsize) for v in H]
+    def initstate(self):
+        t = self.outlen*8
+        if t==224:
+            H = [
+                 0xc1059ed8 if self.size==t else 0x8C3D37C819544DA2,
+                 0x367cd507 if self.size==t else 0x73E1996689DCD4D6,
+                 0x3070dd17 if self.size==t else 0x1DFAB7AE32FF9C82,
+                 0xf70e5939 if self.size==t else 0x679DD514582F9FCF,
+                 0xffc00b31 if self.size==t else 0x0F6D2B697BD44DA8,
+                 0x68581511 if self.size==t else 0x77E36F7304C48942,
+                 0x64f98fa7 if self.size==t else 0x3F9D85A86A1D36C8,
+                 0xbefa4fa4 if self.size==t else 0x1112E6AD91D692A1,
+                ]
+        elif t==256:
+            H = [
+                 0x6a09e667 if self.size==t else 0x22312194FC2BF72C,
+                 0xbb67ae85 if self.size==t else 0x9F555FA3C84C64C2,
+                 0x3c6ef372 if self.size==t else 0x2393B86B6F53B151,
+                 0xa54ff53a if self.size==t else 0x963877195940EABD,
+                 0x510e527f if self.size==t else 0x96283EE2A88EFFE3,
+                 0x9b05688c if self.size==t else 0xBE5E1E2553863992,
+                 0x1f83d9ab if self.size==t else 0x2B0199FC2C85B8AA,
+                 0x5be0cd19 if self.size==t else 0x0EB72DDC81C52CA2,
+                ]
+        elif t==384:
+            H = [
+                 0xcbbb9d5dc1059ed8,
+                 0x629a292a367cd507,
+                 0x9159015a3070dd17,
+                 0x152fecd8f70e5939,
+                 0x67332667ffc00b31,
+                 0x8eb44a8768581511,
+                 0xdb0c2e0d64f98fa7,
+                 0x47b5481dbefa4fa4,
+                ]
+        elif t==512:
+            H = [
+                 0x6a09e667f3bcc908,
+                 0xbb67ae8584caa73b,
+                 0x3c6ef372fe94f82b,
+                 0xa54ff53a5f1d36f1,
+                 0x510e527fade682d1,
+                 0x9b05688c2b3e6c1f,
+                 0x1f83d9abfb41bd6b,
+                 0x5be0cd19137e2179,
+                ]
+        self.H = [Bits(v,self.wsize) for v in H]
 
+    def update(self,M):
+        for W in self.iterblocks(M):
+            a,b,c,d,e,f,g,h = self.H
+            assert len(W)==16
+            N = 80 if self.size>256 else 64
+            for t in range(16,N):
+                w = self.sigma_1(W[t-2])+W[t-7]+self.sigma_0(W[t-15])+W[t-16]
+                W.append(w)
+            for r in range(N):
+                T1 = h + self.Sigma_1(e) + Ch(e,f,g) + self.K[r]+W[r]
+                T2 = self.Sigma_0(a) + Maj(a,b,c)
+                h = g
+                g = f
+                f = e
+                e = d + T1
+                d = c
+                c = b
+                b = a
+                a = T1 + T2
+            self.H[0] += a
+            self.H[1] += b
+            self.H[2] += c
+            self.H[3] += d
+            self.H[4] += e
+            self.H[5] += f
+            self.H[6] += g
+            self.H[7] += h
+        X = ''.join([pack(h,'>L') for h in self.H])
+        return X[:self.outlen]
