@@ -16,7 +16,7 @@ def test_sha1_002():
     assert SHA1()('a'*64) == href
     sha1 = SHA1()
     sha1.update('a'*64)
-    b = sha1.padblock('',bitlen=512)
+    b = sha1.padmethod.lastblock('')
     assert b[0]=='\x80' and b[-2]==chr(0x2)
     assert sha1.update(b) == href
 
