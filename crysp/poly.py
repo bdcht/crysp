@@ -17,7 +17,7 @@ class Poly(object):
       elif isinstance(v,(int,long)):
           self.ival = [v&mask]
       elif isinstance(v,list):
-          self.ival = [x&mask for x in v]
+          self.ival = [int(x)&mask for x in v]
       elif isinstance(v,str):
           mask = 0xff
           self.ival = [ord(x) for x in v]
