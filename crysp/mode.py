@@ -13,18 +13,15 @@ import StringIO
 class Mode(object):
     def __init__(self,cipher,pad=nopadding):
         self._cipher = cipher
-        self.pad = pad(l=self.len)
+        self.pad = pad(l=cipher.size)
 
     @property
     def len(self):
         return self._cipher.size/8
 
     def iterblocks(self,M,**kargs):
-        nb,rb = divmod(len(M),self.len)
-        P = StringIO.StringIO(M)
-        for i in range(nb):
-            yield P.read(self.len)
-        yield self.pad.lastblock(P.read(rb),**kargs)
+        for B in self.pad.iterblocks(M,**kargs):
+            yield B
 
     # mandatory API:
     def enc(self,M):
