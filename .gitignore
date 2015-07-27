@@ -4,3 +4,4 @@ build/
 TODO
 *.egg-info/
 tests/vectors/
+dist/
