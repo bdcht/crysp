@@ -7,7 +7,8 @@
 from crysp.bits import *
 from crysp.utils.operators import rol,ror
 
-import StringIO
+
+from crysp.padding import MDpadding
 
 class MD4(object):
     def __init__(self):
@@ -26,36 +27,19 @@ class MD4(object):
     def initstate(self):
         H = [0x67452301,0xefcdab89,0x98badcfe,0x10325476]
         self.H = [Bits(v,self.wsize) for v in H]
+        self.padmethod = MDpadding(self.blocksize,self.wsize)
 
-    def padblock(self,m,bitlen=0):
-        if bitlen==0: bitlen = len(m)*8
-        n,r = divmod(bitlen,self.blocksize)
-        countsize = self.wsize*2
-        pad = Bits(1,1)//Bits(0,self.blocksize-r-1-countsize)
-        return m+hex(pad)+pack(Bits(bitlen,countsize))
-
-    def iterblocks(self,M):
-        P = StringIO.StringIO(M)
-        osize = self.blocksize/8
-        Pi = P.read(osize)
-        bitlen = 0
-        while len(Pi)==osize:
-            W = Bits(Pi,bitorder=1)
-            yield W.split(self.wsize)
-            bitlen += self.blocksize
-            Pi = P.read(osize)
-        if len(Pi)>0:
-            bitlen += len(Pi)*8
-            Pi = self.padblock(Pi,bitlen)
-            W = Bits(Pi,bitorder=1)
+    def iterblocks(self,M,bitlen=None,padding=False):
+        for B in self.padmethod.iterblocks(M,bitlen=bitlen,padding=padding):
+            W = Bits(B,bitorder=1)
             yield W.split(self.wsize)
 
-    def __call__(self,M):
+    def __call__(self,M,bitlen=None):
         self.initstate()
-        return self.update(self.padblock(M))
+        return self.update(M,bitlen=bitlen,padding=True)
 
-    def update(self,M):
-        for W in self.iterblocks(M):
+    def update(self,M,bitlen=None,padding=False):
+        for W in self.iterblocks(M,bitlen=bitlen,padding=padding):
             a,b,c,d = self.H
             assert len(W)==16
             W.extend([W[i] for i in (0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15)])
@@ -103,8 +87,8 @@ class MD5(MD4):
         self.st = [(7,12,17,22),(5,9,14,20),(4,11,16,23),(6,10,15,21)]
         self.initstate()
 
-    def update(self,M):
-        for W in self.iterblocks(M):
+    def update(self,M,bitlen=None,padding=False):
+        for W in self.iterblocks(M,bitlen=bitlen,padding=padding):
             a,b,c,d = self.H
             assert len(W)==16
             W.extend([W[i] for i in (1,6,11,0,5,10,15,4,9,14,3,8,13,2,7,12)])

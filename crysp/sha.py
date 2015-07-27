@@ -7,7 +7,7 @@
 from crysp.bits import *
 from crysp.utils.operators import rol,ror
 
-import StringIO
+from crysp.padding import SHApadding
 
 Ch     = lambda x,y,z: z^(x&(y^z))
 Parity = lambda x,y,z: x^y^z
@@ -32,37 +32,21 @@ class SHA1(object):
     def initstate(self):
         H = [0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0]
         self.H = [Bits(v,self.wsize) for v in H]
+        self.padmethod = SHApadding(self.blocksize,self.wsize)
 
-    def padblock(self,m,bitlen=0):
-        if bitlen==0: bitlen = len(m)*8
-        n,r = divmod(bitlen,self.blocksize)
-        countsize = self.wsize*2
-        pad = Bits(1,1)//Bits(0,self.blocksize-r-1-countsize)
-        return m+hex(pad)+pack(Bits(bitlen,countsize),'>L')
-
-    def iterblocks(self,M):
-        P = StringIO.StringIO(M)
+    def iterblocks(self,M,bitlen=None,padding=False):
         osize = self.blocksize/8
         fmt = '>16L' if self.wsize==32 else '>16Q'
-        Pi = P.read(osize)
-        bitlen = 0
-        while len(Pi)==osize:
-            W = struct.unpack(fmt,Pi)
-            yield [Bits(w,self.wsize) for w in W]
-            bitlen += self.blocksize
-            Pi = P.read(osize)
-        if len(Pi)>0:
-            bitlen += len(Pi)*8
-            Pi = self.padblock(Pi,bitlen)
-            W = struct.unpack(fmt,Pi)
+        for B in self.padmethod.iterblocks(M,bitlen=bitlen,padding=padding):
+            W = struct.unpack(fmt,B)
             yield [Bits(w,self.wsize) for w in W]
 
-    def __call__(self,M):
+    def __call__(self,M,bitlen=None):
         self.initstate()
-        return self.update(self.padblock(M))
+        return self.update(M,bitlen=bitlen,padding=True)
 
-    def update(self,M):
-        for W in self.iterblocks(M):
+    def update(self,M,bitlen=None,padding=False):
+        for W in self.iterblocks(M,bitlen=bitlen,padding=padding):
             a,b,c,d,e = self.H
             assert len(W)==16
             for t in range(16,80):
@@ -188,9 +172,10 @@ class SHA2(SHA1):
                  0x5be0cd19137e2179,
                 ]
         self.H = [Bits(v,self.wsize) for v in H]
+        self.padmethod = SHApadding(self.blocksize,self.wsize)
 
-    def update(self,M):
-        for W in self.iterblocks(M):
+    def update(self,M,bitlen=None,padding=False):
+        for W in self.iterblocks(M,bitlen=bitlen,padding=padding):
             a,b,c,d,e,f,g,h = self.H
             assert len(W)==16
             N = 80 if self.size>256 else 64
