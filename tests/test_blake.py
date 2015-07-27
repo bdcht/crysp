@@ -29,3 +29,14 @@ def test_blake512(m,h):
 @pytest.mark.parametrize('m,h',vectors_blake384)
 def test_blake384(m,h):
     assert blake384(m).encode('hex')==h.lower()
+
+
+vectors_blake2b=[('hello','e4cfa39a3d37be31c59609e807970799caa68a19bfaa15135f165085e01d41a65ba1e1b146aeb6bd0092b49eac214c103ccfa3a365954bbbe52f74a2b3620c94'),]
+@pytest.mark.parametrize('m,h',vectors_blake2b)
+def test_blake2b(m,h):
+    assert blake2b(m).encode('hex')==h
+
+vectors_blake2s=[('hello','19213bacc58dee6dbde3ceb9a47cbb330b3d86f8cca8997eb00be456f140ca25')]
+@pytest.mark.parametrize('m,h',vectors_blake2s)
+def test_blake2b(m,h):
+    assert blake2s(m).encode('hex')==h

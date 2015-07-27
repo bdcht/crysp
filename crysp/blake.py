@@ -9,7 +9,6 @@ from crysp.poly import *
 from crysp.utils.operators import ror
 from crysp.sha import SHA2
 from crysp.padding import Blakepadding
-import pdb
 
 PI= [0x243F6A8885A308D3L,
      0x13198A2E03707344L,
@@ -121,10 +120,15 @@ blake384 = Blake(384)
 blake512 = Blake(512)
 
 #------------------------------------------------------------------------------
+from crysp.padding import Nullpadding
+
 class Blake2(Blake):
 
     def initstate(self,salt='',pers='',keylen=0,**kargs):
         super(Blake2,self).initstate(0)
+        self.padmethod = Nullpadding(self.blocksize)
+        self.outlen = kargs.get('outlen',self.outlen)
+        self.rounds = 12 if self.size>256 else 10
         l = self.wsize/4
         if salt is '': salt = '\0'*l
         if pers is '': pers = '\0'*l
@@ -144,7 +148,7 @@ class Blake2(Blake):
         self.P = Poly(Bits(P,bitorder=1).split(self.wsize),self.wsize)
         self.H = self.IV ^ self.P
 
-    def treeinit(self,fanout=1,depth=1,leafl=0,noffset=0,ndepth=0,inner=0):
+    def treeinit(self,fanout=1,depth=1,leafl=0,noffset=0,ndepth=0,inner=0,**kargs):
         self.fanout = fanout
         self.depth = depth
         self.leafl = Bits(leafl,32)
@@ -168,12 +172,7 @@ class Blake2(Blake):
 
     def __call__(self,M,**kargs):
         self.initstate(**kargs)
-        # minimal padding in Blake2:
-        if len(M)%(self.blocksize/8)==0:
-            padding=False
-        else:
-            padding=True
-        return self.update(M,padding=padding)
+        return self.update(M,padding=True)
 
     def update(self,M,padding=False):
         def G(W,r,i,v,ja,jb,jc,jd):
@@ -209,7 +208,7 @@ class Blake2(Blake):
                 G(W,r,5,v,1,6,11,12)
                 G(W,r,6,v,2,7,8,13)
                 G(W,r,7,v,3,4,9,14)
-            self.H = self.H^v[0:8]^v[8:16]
+            self.H = self.H^(v[0:8]^v[8:16])
         # output hash string in little endian:
         return ''.join([pack(h) for h in self.H])[:self.outlen]
 
