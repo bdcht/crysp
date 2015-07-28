@@ -193,11 +193,8 @@ class Chain(object):
         self.pad = pad
 
     def iterblocks(self,M,**kargs):
-        nb,rb = divmod(len(M),self.len)
-        P = StringIO.StringIO(M)
-        for i in range(nb):
-            yield P.read(self.len)
-        yield self.pad.lastblock(P.read(rb),**kargs)
+        for b in self.pad.iterblocks(M,**kargs):
+            yield b
 
     # mandatory API:
     def __call__(self,M):
