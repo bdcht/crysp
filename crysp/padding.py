@@ -62,15 +62,24 @@ class nopadding(blockiterator):
 #------------------------------------------------------------------------------
 class Nullpadding(blockiterator):
     def lastblock(self,m,**kargs):
+        bitlen = kargs.get('bitlen',None)
+        if bitlen is None:
+            bitlen = len(m)*8
+        else:
+            bitlen = bitlen-self.bitcnt
+        assert bitlen<self.blocksize
+        q = self.blocksize-bitlen
+        b = hex(Bits(m,bitlen)//Bits(0,q))
+        assert len(b)==self.blocklen
+        self.bitcnt += bitlen
         self.padflag = True
-        self.bitcnt += len(m)*8
-        N = self.blocksize/8
-        q = len(m)%N
-        if q>0:
-            m += '\0'*(N-q)
-        return m
+        self.padcnt = q
+        return b
+    # remove padding:
     def remove(self,m):
-        return m
+        b=Bits(m[-self.blocklen:])
+        b.size -= self.padcnt
+        return m[:-self.blocklen]+hex(b)
 
 #------------------------------------------------------------------------------
 # RFC1321 step 3.1.
