@@ -16,7 +16,7 @@ class Poly(object):
           self.ival = [x&mask for x in v.ival]
       elif isinstance(v,(int,long)):
           self.ival = [v&mask]
-      elif isinstance(v,list):
+      elif isinstance(v,(list,tuple)):
           self.ival = [int(x)&mask for x in v]
       elif isinstance(v,str):
           mask = 0xff
