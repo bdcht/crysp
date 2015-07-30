@@ -157,12 +157,13 @@ class Bits(object):
       i += 8
     return ''.join(s)
 
-  def split(self,subsize):
+  def split(self,subsize,bigend=False):
     l = []
     i = 0
     while i<self.__sz:
       l.append(self[i:i+subsize])
       i += subsize
+    if bigend: l.reverse()
     return l
 
   def todots(self):
