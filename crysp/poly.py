@@ -179,9 +179,9 @@ class Poly(object):
       res.ival = self.ival+res.ival
       return res
 
-  def split(self,newsize):
+  def split(self,newsize,bigend=False):
       if newsize==self.size: return self
       l = []
-      for x in self: l.extend(x.split(newsize))
+      for x in self: l.extend(x.split(newsize,bigend))
       return Poly([x.int() for x in l],size=newsize)
 
