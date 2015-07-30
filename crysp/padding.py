@@ -33,7 +33,7 @@ class blockiterator(object):
         Pi = P.read(self.blocklen)
         while len(Pi)==self.blocklen:
             nc = self.bitcnt + self.blocksize
-            if nc<=bitlen or (not padding):
+            if nc<bitlen:
                 self.bitcnt = nc
                 yield Pi
                 Pi = P.read(self.blocklen)
@@ -41,13 +41,15 @@ class blockiterator(object):
                 break
         if padding:
             nPi = self.lastblock(Pi,**kargs)
-            b,lastb= nPi[:self.blocksize],nPi[self.blocksize:]
+            b,lastb= nPi[:self.blocklen],nPi[self.blocklen:]
             yield b
             if len(lastb)>0:
                 self.bitcnt = 0
                 yield lastb
         else:
-            assert len(Pi)==0
+            assert len(Pi)==self.blocklen
+            self.bitcnt += self.blocksize
+            yield Pi
         P.close()
 
 #------------------------------------------------------------------------------
@@ -67,7 +69,6 @@ class Nullpadding(blockiterator):
             bitlen = len(m)*8
         else:
             bitlen = bitlen-self.bitcnt
-        assert bitlen<self.blocksize
         q = self.blocksize-bitlen
         b = hex(Bits(m,bitlen)//Bits(0,q))
         assert len(b)==self.blocklen
@@ -94,11 +95,11 @@ class bitpadding(blockiterator):
             bitlen = len(m)*8
         else:
             bitlen = bitlen-self.bitcnt
-        assert bitlen<self.blocksize
-        b = hex(Bits(m,bitlen)//Bits(1,self.blocksize-bitlen))
-        assert len(b)==self.blocklen
+        q = (self.blocksize-bitlen) or self.blocksize
+        b = hex(Bits(m,bitlen)//Bits(1,q))
         self.bitcnt += bitlen
         self.padflag = True
+        self.padcnt  = q
         return b
     # remove padding:
     def remove(self,m):
@@ -112,37 +113,41 @@ class pkcs7(blockiterator):
     # (no optional kargs)
     def lastblock(self,m,**kargs):
         p = len(m)
-        assert p<self.blocklen
         self.padflag = True
         self.bitcnt += p*8
-        return m+(chr(self.blocklen-p)*(self.blocklen-p))
+        q = (self.blocklen-p) or self.blocklen
+        if q==0: q=self.blocklen
+        self.padcnt = q*8
+        return m+(chr(q)*q)
     # remove padding:
     def remove(self,c):
-        n = ord(c[-1])
-        if n>self.blocklen or (c[-n:]!=c[-1]*n):
+        q = ord(c[-1])
+        if n>self.blocklen or (c[-q:]!=c[-1]*q):
             raise PaddingError(c)
         else:
-            return c[:-n]
+            return c[:-q]
 
 #------------------------------------------------------------------------------
 class X923(blockiterator):
     # return padded last block.
     # (no optional kargs)
     def lastblock(self,m,**kargs):
+        assert self.blocklen<256
         p = len(m)
-        assert p<self.blocklen
-        r = m+('\0'*(self.blocklen-p))
-        r[-1] = chr(self.blocklen-p)
+        q = (self.blocklen-p) or self.blocklen
+        r = m+('\0'*(q-1))
+        r += chr(q)
         self.padflag = True
         self.bitcnt += p*8
+        self.padcnt  = q*8
         return r
     # remove padding:
     def remove(self,c):
-        n = ord(c[-1])
-        if n>self.blocklen or (c[-n:-1]!='\0'*(n-1)):
+        q = ord(c[-1])
+        if n>self.blocklen or (c[-q:-1]!='\0'*(q-1)):
             raise PaddingError(c)
         else:
-            return c[:-n]
+            return c[:-q]
 
 #------------------------------------------------------------------------------
 class MDpadding(blockiterator):
