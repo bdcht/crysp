@@ -1,40 +1,46 @@
 # -*- coding: utf-8 -*-
 
 # This code is part of crysp
-# Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com)
+# Copyright (C) 2009-2015 Axel Tillequin (bdcht3@gmail.com)
 # published under GPLv2 license
 
 from crysp.bits import *
 import StringIO
+import pdb
 
 class PaddingError(Exception):
     def __init__(self,value):
         self.value = value
 
+#------------------------------------------------------------------------------
 class blockiterator(object):
     def __init__(self,l):
         self.blocksize = l
         n,r = divmod(l,8)
         if r!=0: raise PaddingError('invalid block size')
         self.blocklen = n
+        self.reset()
+    def reset(self):
         self.padflag = False
         self.bitcnt = 0
+        self.padcnt = 0
     def iterblocks(self,m,**kargs):
         padding = kargs.get('padding',True)
-        if self.padflag: padding=False
-        bitlen = kargs.get('bitlen',None)
+        if self.padflag: raise PaddingError("padding already added")
         mlen = len(m)*8
-        if bitlen is None:
-            bitlen = mlen
-        assert bitlen<=mlen
+        bitlen = kargs.get('bitlen',mlen)
+        if bitlen>mlen: raise PaddingError('input bitlen mismatch')
         if padding is False and bitlen%self.blocksize>0:
             raise PaddingError('input not a multiple of block size')
         P = StringIO.StringIO(m)
         Pi = P.read(self.blocklen)
+        bitcnt = 0
+        start = self.bitcnt
         while len(Pi)==self.blocklen:
-            nc = self.bitcnt + self.blocksize
+            nc = bitcnt + self.blocksize
             if nc<bitlen:
-                self.bitcnt = nc
+                bitcnt = nc
+                self.bitcnt = start+bitcnt
                 yield Pi
                 Pi = P.read(self.blocklen)
             else:
@@ -47,10 +53,14 @@ class blockiterator(object):
                 self.bitcnt = 0
                 yield lastb
         else:
-            assert len(Pi)==self.blocklen
-            self.bitcnt += self.blocksize
+            assert nc==bitlen
+            self.bitcnt = start+nc
             yield Pi
         P.close()
+    @property
+    def new(self):
+        self.reset()
+        return self
 
 #------------------------------------------------------------------------------
 class nopadding(blockiterator):
@@ -122,7 +132,7 @@ class pkcs7(blockiterator):
     # remove padding:
     def remove(self,c):
         q = ord(c[-1])
-        if n>self.blocklen or (c[-q:]!=c[-1]*q):
+        if q>self.blocklen or (c[-q:]!=c[-1]*q):
             raise PaddingError(c)
         else:
             return c[:-q]
@@ -144,7 +154,7 @@ class X923(blockiterator):
     # remove padding:
     def remove(self,c):
         q = ord(c[-1])
-        if n>self.blocklen or (c[-q:-1]!='\0'*(q-1)):
+        if q>self.blocklen or (c[-q:-1]!='\0'*(q-1)):
             raise PaddingError(c)
         else:
             return c[:-q]
