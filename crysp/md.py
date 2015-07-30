@@ -6,10 +6,11 @@
 
 from crysp.bits import *
 from crysp.utils.operators import rol,ror
-
+import pdb
 
 from crysp.padding import MDpadding
 
+#------------------------------------------------------------------------------
 class MD4(object):
     def __init__(self):
         self.size = 128
@@ -57,6 +58,7 @@ class MD4(object):
             self.H[3] += d
         return ''.join([pack(h) for h in self.H])
 
+#------------------------------------------------------------------------------
 class MD5(MD4):
     def __init__(self):
         self.size = 128
@@ -106,3 +108,114 @@ class MD5(MD4):
             self.H[2] += c
             self.H[3] += d
         return ''.join([pack(h) for h in self.H])
+
+#------------------------------------------------------------------------------
+from crysp.poly import Poly
+from crysp.padding import Nullpadding
+
+Q = [0x7311c2812425cfa0L,
+     0x6432286434aac8e7L,
+     0xb60450e9ef68b7c1L,
+     0xe8fb23908d9f06f1L,
+     0xdd2e76cba691e5bfL,
+     0x0cd0d63b2c30bc41L,
+     0x1f8ccf6823058f8aL,
+     0x54e5ed5b88e3775dL,
+     0x4ad12aae0a6d6031L,
+     0x3e7f16bb88222e0dL,
+     0x8af8671d3fb50c2cL,
+     0x995ad1178bd25c31L,
+     0xc878c1dd04c4b633L,
+     0x3b72066c7a1552acL,
+     0x0d6f3522631effcbL]
+
+rin = [10,  5, 13, 10, 11, 12,  2,  7, 14, 15,  7, 13, 11,  7,  6, 12]
+lin = [11, 24,  9, 16, 15,  9, 27, 15,  6,  2, 29,  8, 15,  5, 31,  9]
+
+class MD6(object):
+    def __init__(self,d=512,Key='',L=0):
+        self.size = d
+        self.chunksize = 1024
+        self.blocksize = 3*self.chunksize
+        self.wsize = 64
+        r = 40+(d/4)
+        if Key: r = max(80,r)
+        self.keylen = len(Key)
+        Key = Key[:64].ljust(64,'\0')
+        self.K = Poly(struct.unpack('>8Q',Key),self.wsize)
+        self.rounds = r
+        self.L = L
+
+    def __call__(self,M,bitlen=None):
+        pdb.set_trace()
+        l = 0
+        while 1:
+            l += 1
+            if l==self.L+1: return self.SEQ(M,bitlen)
+            M = self.PAR(l,M,bitlen)
+            if len(M)==128:
+                h = Bits(M)>>(1024-self.size)
+                h.size = self.size
+                return hex(h)
+
+    def SEQ(self,M,bitlen=None):
+        pad = Nullpadding(3072)
+        B = [struct.unpack('>48Q',X) for X in pad.iterblocks(M,bitlen=bitlen)]
+        j = len(B)
+        z = 1 if j==1 else 0
+        d,keylen,L,r = self.size,self.keylen,self.L,self.rounds
+        V = Bits(d,12)//Bits(keylen,8)//Bits(0,16)//Bits(z,4)//Bits(L,8)//Bits(r,12)//Bits(0,4)
+        C = [Poly(0,64,dim=16)]
+        W = Poly(Q,64,dim=89)//Poly(self.K,64)
+        W.dim = 89
+        for i in range(j):
+            if i==(j-1):
+                V[20:36]=pad.padcnt
+                W[24]  = V
+            U = ((self.L+1)<<56)+i
+            W[23]  = U
+            W[25:41] = C[-1]
+            W[41:89] = B[i]
+            C.append(self.f(W))
+        h = concat(C[-1])
+        h>>(h.size-self.size)
+        return hex(h)
+
+    def PAR(self,l,M,bitlen=None):
+        pad = Nullpadding(4096)
+        B = [struct.unpack('>64Q',X) for X in pad.iterblocks(M,bitlen=bitlen)]
+        j = len(B)
+        z = 1 if j==1 else 0
+        d,keylen,L,r = self.size,self.keylen,self.L,self.rounds
+        V = Bits(d,12)//Bits(keylen,8)//Bits(0,16)//Bits(z,4)//Bits(L,8)//Bits(r,12)//Bits(0,4)
+        C = []
+        W = Poly(Q,64,dim=89)//Poly(self.K,64)
+        W.dim = 89
+        for i in range(j):
+            if i==(j-1):
+                V[20:36]=pad.padcnt
+                W[24]  = V
+            U = (l<<56)+i
+            W[23]  = U
+            W[25:89] = B[i]
+            C.append(self.f(W))
+        Ml = concat(C)
+        return ''.join((pack(c,'>L') for c in Ml))
+
+    def f(self,N):
+        C = Poly(0,64,dim=16)
+        t = 16*self.rounds
+        t0,t1,t2,t3,t4 = 17,18,21,31,67
+        A = N//Poly(0,64,dim=t)
+        S = Bits(0x0123456789abcdef,64)
+        j = 0
+        for i in range(n,n+t):
+            x = S^A.e(i-n)^A.e(i-t0)
+            x = x^(A.e(i-t1) & A.e(i-t2))^(A.e(i-t3) & A.e(i-t4))
+            x = x^(x>>rin[j])
+            A[i] = x^(x<<lin[j])
+            j += 1
+            if j==16:
+                S = rol(S,1)^(S&0x7311c2812425cfa0L)
+                j=0
+        return A[-16:]
