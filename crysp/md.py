@@ -112,6 +112,7 @@ class MD5(MD4):
 #------------------------------------------------------------------------------
 from crysp.poly import Poly
 from crysp.padding import Nullpadding
+from crysp.utils.operators import concat
 
 Q = [0x7311c2812425cfa0L,
      0x6432286434aac8e7L,
@@ -165,21 +166,21 @@ class MD6(object):
         z = 1 if j==1 else 0
         d,keylen,L,r = self.size,self.keylen,self.L,self.rounds
         V = Bits(d,12)//Bits(keylen,8)//Bits(0,16)//Bits(z,4)//Bits(L,8)//Bits(r,12)//Bits(0,4)
-        C = [Poly(0,64,dim=16)]
+        C = Poly(0,64,dim=16)
         W = Poly(Q,64,dim=89)//Poly(self.K,64)
         W.dim = 89
+        U = (self.L+1)<<56
         for i in range(j):
             if i==(j-1):
                 V[20:36]=pad.padcnt
                 W[24]  = V
-            U = ((self.L+1)<<56)+i
-            W[23]  = U
-            W[25:41] = C[-1]
+            W[23] = U+i
+            W[25:41] = C
             W[41:89] = B[i]
-            C.append(self.f(W))
-        h = concat(C[-1])
-        h>>(h.size-self.size)
-        return hex(h)
+            C = self.f(W)
+        h = concat([c for c in C[::-1]])
+        h.size = self.size
+        return pack(h,'>L')
 
     def PAR(self,l,M,bitlen=None):
         pad = Nullpadding(4096)
@@ -189,7 +190,7 @@ class MD6(object):
         d,keylen,L,r = self.size,self.keylen,self.L,self.rounds
         V = Bits(d,12)//Bits(keylen,8)//Bits(0,16)//Bits(z,4)//Bits(L,8)//Bits(r,12)//Bits(0,4)
         C = []
-        W = Poly(Q,64,dim=89)//Poly(self.K,64)
+        W = Poly(Q,64)//Poly(self.K,64)
         W.dim = 89
         for i in range(j):
             if i==(j-1):
@@ -204,6 +205,7 @@ class MD6(object):
 
     def f(self,N):
         C = Poly(0,64,dim=16)
+        n = N.dim
         t = 16*self.rounds
         t0,t1,t2,t3,t4 = 17,18,21,31,67
         A = N//Poly(0,64,dim=t)
