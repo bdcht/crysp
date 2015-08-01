@@ -18,6 +18,7 @@ def test_sha1_002():
     sha1.update('a'*64)
     b = sha1.padmethod.lastblock('')
     assert b[0]=='\x80' and b[-2]==chr(0x2)
+    sha1.padmethod.padflag=False
     assert sha1.update(b) == href
 
 @pytest.mark.parametrize('m,h',[('abc','0164b8a914cd2a5e74c4f7ff082c4d97f1edf880')])
