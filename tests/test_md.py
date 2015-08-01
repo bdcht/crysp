@@ -40,3 +40,12 @@ def test_md6_002():
     h = "894cf0598ad3288ed4bb5ac5df23eba0ac388a11b7ed2e3dd5ec5131"
     assert md6(m).encode('hex') == h
 
+def test_md6_003():
+    md6 = MD6(256)
+    m = ["11223344556677".decode('hex')]*115
+    m[-1] = "\x11\x22"
+    m = ''.join(m)
+    assert len(m)==800
+    h = "4e78ab5ec8926a3db0dcfa09ed48de6c33a7399e70f01ebfc02abb52767594e2"
+    assert md6(m).encode('hex') == h
+

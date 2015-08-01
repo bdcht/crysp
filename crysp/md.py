@@ -161,7 +161,7 @@ class MD6(object):
         pad = Nullpadding(3072)
         B = [struct.unpack('>48Q',X) for X in pad.iterblocks(M,bitlen=bitlen)]
         j = len(B)
-        z = 1 if j==1 else 0
+        z = 0
         d,keylen,L,r = self.size,self.keylen,self.L,self.rounds
         V = Bits(d,12)//Bits(keylen,8)//Bits(0,16)//Bits(z,4)//Bits(L,8)//Bits(r,12)//Bits(0,4)
         C = Poly(0,64,dim=16)
@@ -172,6 +172,7 @@ class MD6(object):
         for i in range(j):
             if i==(j-1):
                 V[20:36]=pad.padcnt
+                V[36:40]=Bits(1,4)
                 W[24]  = V
             W[23] = U+i
             W[25:41] = C
