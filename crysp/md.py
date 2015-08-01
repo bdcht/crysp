@@ -6,7 +6,6 @@
 
 from crysp.bits import *
 from crysp.utils.operators import rol,ror
-import pdb
 
 from crysp.padding import MDpadding
 
@@ -148,7 +147,6 @@ class MD6(object):
         self.L = L
 
     def __call__(self,M,bitlen=None):
-        pdb.set_trace()
         l = 0
         while 1:
             l += 1
@@ -169,6 +167,7 @@ class MD6(object):
         C = Poly(0,64,dim=16)
         W = Poly(Q,64,dim=89)//Poly(self.K,64)
         W.dim = 89
+        W[24]  = V
         U = (self.L+1)<<56
         for i in range(j):
             if i==(j-1):
@@ -192,6 +191,7 @@ class MD6(object):
         C = []
         W = Poly(Q,64)//Poly(self.K,64)
         W.dim = 89
+        W[24]  = V
         for i in range(j):
             if i==(j-1):
                 V[20:36]=pad.padcnt

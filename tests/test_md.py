@@ -22,3 +22,21 @@ def test_md5_001(m,h):
     md5 = MD5()
     assert md5(m).encode('hex') == h
 
+vectors_md6_1 = [("abc" ,"8854c14dc284f840ed71ad7ba542855ce189633e48c797a55121a746be48cec8"),
+              ]
+@pytest.mark.parametrize('m,h',vectors_md6_1)
+def test_md6_001(m,h):
+    md6 = MD6(256,L=64)
+    md6.rounds = 5
+    assert md6(m).encode('hex') == h
+
+def test_md6_002():
+    md6 = MD6(224,L=64,Key='abcde12345')
+    md6.rounds = 5
+    m = ["11223344556677".decode('hex')]*86
+    m[-1] = "1122334455".decode('hex')
+    m = ''.join(m)
+    assert len(m)==600
+    h = "894cf0598ad3288ed4bb5ac5df23eba0ac388a11b7ed2e3dd5ec5131"
+    assert md6(m).encode('hex') == h
+
