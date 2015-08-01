@@ -28,7 +28,7 @@ class blockiterator(object):
         padding = kargs.get('padding',True)
         if self.padflag: raise PaddingError("padding already added")
         mlen = len(m)*8
-        bitlen = kargs.get('bitlen',mlen)
+        bitlen = kargs.get('bitlen',None) or mlen
         if bitlen>mlen: raise PaddingError('input bitlen mismatch')
         if padding is False and bitlen%self.blocksize>0:
             raise PaddingError('input not a multiple of block size')
