@@ -1,5 +1,5 @@
 # This code is part of crysp
-# Copyright (C) 2006-2014 Axel Tillequin (bdcht3@gmail.com) 
+# Copyright (C) 2006-2014 Axel Tillequin (bdcht3@gmail.com)
 # published under GPLv2 license
 
 import struct
@@ -8,24 +8,30 @@ import struct
 def reverse_byte(b):
     return (b * 0x0202020202L & 0x010884422010L) % 1023
 
+# write obj in little-endian format by default (<L).
+# use '>L' for big-endian format.
 def pack(obj,fmt='<L'):
-    assert fmt in ['<L']
+    assert fmt in ['<L','>L']
     s = (chr(x.ival&0xff) for x in obj.split(8))
+    if fmt=='>L': s = reversed(list(s))
     return ''.join(s)
 
-def unpack(istr):
+# generalize struct.unpack to return one long value of
+# arbitrary bit length.
+def unpack(istr,bigend=False):
     r = len(istr)
     size = r<<3
     i = 0
     b = 0
+    endian = '>' if bigend else '<'
     for q,f in [(8,'Q'),(4,'L'),(2,'H'),(1,'B')]:
         n,r = divmod(r,q)
         if n>0:
             c = n*q
             qlen = q<<3
             s,istr = istr[:c],istr[c:]
-            for v in struct.unpack('<%d%c'%(n,f),s):
-                b |= v<<i
+            for v in struct.unpack('%c%d%c'%(endian,n,f),s):
+                b = b|(v<<i) if not bigend else (b<<i)|v
                 i += qlen
         if r==0: return (b,size)
     raise ValueError
@@ -111,6 +117,9 @@ class Bits(object):
       return -(self.ival^self.mask)-1
     return self.ival&self.mask
 
+  def __int__(self):
+    return self.int()
+
   def __index__(self):
     return self.int()
 
@@ -148,12 +157,13 @@ class Bits(object):
       i += 8
     return ''.join(s)
 
-  def split(self,subsize):
+  def split(self,subsize,bigend=False):
     l = []
     i = 0
     while i<self.__sz:
       l.append(self[i:i+subsize])
       i += subsize
+    if bigend: l.reverse()
     return l
 
   def todots(self):

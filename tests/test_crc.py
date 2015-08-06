@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+import pytest
 from crysp.crc import *
 from binascii import b2a_hex
 
@@ -9,8 +9,7 @@ D = {
         "message digest": 0x20159d7fL,
         "Toto": 0xB0FE0BCFL,
     }
-l = max(map(len,D))
-for (k,v) in D.iteritems():
-    print ("crc32(%s)"%k).ljust(l+8)+" = %08s\t(test vector:%08s)"%(hex(crc32(k)),hex(v))
 
-
+@pytest.mark.parametrize('k,v',D.items())
+def test_crc(k,v):
+    assert crc32(k)==v

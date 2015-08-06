@@ -35,7 +35,7 @@ class WhiteDES(object):
             t = 0
             for n in range(12):
                 nt = t+8
-                blk[t:nt] = self.KT[r][n][blk[t:nt].ival]
+                blk[t:nt] = self.KT[r][n][blk[t:nt]]
                 t = nt
             blk = self.__FX(blk)
         return hex(blk[self.tM3])
@@ -50,7 +50,7 @@ class WhiteDES(object):
 
 def table_rKS(r,K):
     fk = subkey(PC1(K),r)
-    nfk = [fk[6*n:6*n+6] for n in range(8)]
+    nfk = fk.split(6)
     rks = []
     for n in range(8):
         rks.append([0]*64)
@@ -60,7 +60,7 @@ def table_rKS(r,K):
             x = re^nfk[n]
             i = x[(5,0)].ival
             j = x[(4,3,2,1)].ival
-            rks[n][re.ival] = Bits(S(n,(i<<4)+j),4)[::-1].ival
+            rks[n][re] = Bits(S(n,(i<<4)+j),4)[::-1].ival
     for n in range(8):
         rks[n] = tuple(rks[n])
     return tuple(rks)
@@ -97,7 +97,7 @@ def table_M1():
     rbits = r.ival
     blk = []
     for b in range(12):
-        blk.append([None]*8)
+        blk.append([0]*8)
         if b<8:
             blk[b][0:6]=re[0:6]
             rbits.remove(re[0])
@@ -120,9 +120,9 @@ def table_M1():
 
 def SRLRformat():
     I = Poly(range(96))
-    SR = Poly([None]*32)
-    L = Poly([None]*32)
-    R = Poly([None]*32)
+    SR = Poly([0]*32)
+    L = Poly([0]*32)
+    R = Poly([0]*32)
     rbits = getrbits_T_in()
     for i in range(0,8):
         s = I[8*i:8*i+8].ival
@@ -139,9 +139,9 @@ def SRLRformat():
 
 def ERLRformat():
     I = Poly(range(96))
-    ER = Poly([None]*48)
-    L = Poly([None]*32)
-    R = Poly([None]*32)
+    ER = Poly([0]*48)
+    L = Poly([0]*32)
+    R = Poly([0]*32)
     rbits = getrbits_T_in()
     for i in range(0,8):
         s = I[8*i:8*i+8].ival
@@ -160,8 +160,8 @@ def table_M2():
     Mat = [Bits(0,96) for i in range(96)]
     SR,L,R = SRLRformat()
     newL = R.ival
-    newR = Poly(zip(P(SR),L))
-    RE = E(newR).ival
+    newR = zip(P(SR),L)
+    RE = [newR[i] for i in E(Poly(range(len(L))))]
     m=[]
     for r in range(8):
         m += RE[0:6]+newL[0:2]
@@ -171,7 +171,7 @@ def table_M2():
     for r in range(4):
         m += newL[0:4]
         for b in rbits[:4]:
-            m += [newR.e(b)]
+            m += [newR[b]]
         newL = newL[4:]
         rbits = rbits[4:]
     assert len(m)==96

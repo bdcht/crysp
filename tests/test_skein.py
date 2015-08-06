@@ -1,16 +1,16 @@
-#!/usr/bin/env python
+import pytest
 
 import struct
 from crysp.skein import *
 
 # testing UBI configuration (see Skein specification document, Annex B):
-IV_256_128 = struct.pack('<QQQQ',0xE1111906964D7260, 0x883DAAA77C8D811C, 0x10080DF491960F7A, 0xCCF7DDE5B45BC1C2)
-IV_256_160 = struct.pack('<QQQQ',0x1420231472825E98, 0x2AC4E9A25A77E590, 0xD47A58568838D63E, 0x2DD2E4968586AB7D)
-IV_256_256 = struct.pack('<QQQQ',0xFC9DA860D048B449, 0x2FCA66479FA7D833, 0xB33BC3896656840F, 0x6A54E920FDE8DA69)
-
-assert Skein(256,128)._initstate()==IV_256_128
-assert Skein(256,160)._initstate()==IV_256_160
-assert Skein(256,256)._initstate()==IV_256_256
+def test_skein_001():
+    IV_256_128 = struct.pack('<QQQQ',0xE1111906964D7260, 0x883DAAA77C8D811C, 0x10080DF491960F7A, 0xCCF7DDE5B45BC1C2)
+    IV_256_160 = struct.pack('<QQQQ',0x1420231472825E98, 0x2AC4E9A25A77E590, 0xD47A58568838D63E, 0x2DD2E4968586AB7D)
+    IV_256_256 = struct.pack('<QQQQ',0xFC9DA860D048B449, 0x2FCA66479FA7D833, 0xB33BC3896656840F, 0x6A54E920FDE8DA69)
+    assert Skein(256,128)._initstate()==IV_256_128
+    assert Skein(256,160)._initstate()==IV_256_160
+    assert Skein(256,256)._initstate()==IV_256_256
 
 # testing Skein hash function
 # ---------------------------
@@ -41,31 +41,29 @@ vectors = [(256,256,
             "E9DA09857E831E82EF8B4691C235656515D437D2BDA33BCEC001C67FFDE15BA8")
            ]
 
-for v in vectors:
-    Nb,No = v[0],v[1]
-    print ('test Skein-%d-%d'%(v[0],v[1])).ljust(50,'.'),
-    m,h = (s.decode('hex') for s in v[2:])
+@pytest.mark.parametrize('Nb,No,m,h',vectors)
+def test_skein_002(Nb,No,m,h):
     H = Skein(Nb,No)
+    m,h = (s.decode('hex') for s in (m,h))
     assert H(m)==h
-    print 'ok'
 
 # testing Skein hash function with non integral random input:
 #------------------------------------------------------------
-print 'test Skein-256-256 (non integral 1)'.ljust(50,'.'),
-H = Skein(256,256)
-M='00'
-RESULT="52D2B5FFC2966C06BA7BB0CC2BABBC935E99146487FB361A239830D4D688C988"
-l=1
-m,h = (s.decode('hex') for s in (M,RESULT))
-assert H(m,bitlen=l)==h
-print 'ok'
-print 'test Skein-256-256 (non integral 257)'.ljust(50,'.'),
-M='00'*33
-RESULT="3EAEA996FAD95B6032654D6CA93AC3450BED8C754CD8000460A2876E34E52FA7"
-l=257
-m,h = (s.decode('hex') for s in (M,RESULT))
-assert H(m,bitlen=l)==h
-print 'ok'
+def test_skein_003():
+    H = Skein(256,256)
+    M='00'
+    RESULT="52D2B5FFC2966C06BA7BB0CC2BABBC935E99146487FB361A239830D4D688C988"
+    l=1
+    m,h = (s.decode('hex') for s in (M,RESULT))
+    assert H(m,bitlen=l)==h
+
+def test_skein_004():
+    H = Skein(256,256)
+    M='00'*33
+    RESULT="3EAEA996FAD95B6032654D6CA93AC3450BED8C754CD8000460A2876E34E52FA7"
+    l=257
+    m,h = (s.decode('hex') for s in (M,RESULT))
+    assert H(m,bitlen=l)==h
 
 # testing Skein MAC function:
 # ---------------------------
@@ -78,25 +76,22 @@ vectors = [(256,256,"CB41F1706CDE09651203C2D0EFBADDF8",
             "C353A316558EC34F8245DD2F9C2C4961FBC7DECC3B69053C103E4B8AAAF20394"),
           ]
 
-for v in vectors:
-    Nb,No = v[0],v[1]
-    print ('test Skein-%d-%d MAC'%(v[0],v[1])).ljust(50,'.'),
-    K,m,h = (s.decode('hex') for s in v[2:])
+@pytest.mark.parametrize('Nb,No,K,m,h',vectors)
+def test_skein_005(Nb,No,K,m,h):
+    K,m,h = (s.decode('hex') for s in (K,m,h))
     H = Skein(Nb,No,key=K)
     assert H(m)==h
-    print 'ok'
 
 # testing Skein Tree Hash:
 # ------------------------
-print 'test Skein-256-256 tree hash (02,02,02)'.ljust(50,'.'),
-H = Skein(256,256,Yl=2,Yf=2,Ym=2)
-M="000102010401060108010A010C010E01100112011401160118011A011C011E01"\
-  "200122012401260128012A012C012E01300132013401360138013A013C013E01"\
-  "400142014401460148014A014C014E01500152015401560158015A015C015E01"\
-  "600162016401660168016A016C016E01700172017401760178017A017C01"
-RESULT="E3CF8FCDD20BFE85D175448007226C20FF22A65DC9DF7588BE305E5CCC3F4941"
-m,h = (s.decode('hex') for s in (M,RESULT))
-assert H(m)==h
-print 'ok'
+def test_skein_006():
+    H = Skein(256,256,Yl=2,Yf=2,Ym=2)
+    M="000102010401060108010A010C010E01100112011401160118011A011C011E01"\
+      "200122012401260128012A012C012E01300132013401360138013A013C013E01"\
+      "400142014401460148014A014C014E01500152015401560158015A015C015E01"\
+      "600162016401660168016A016C016E01700172017401760178017A017C01"
+    RESULT="E3CF8FCDD20BFE85D175448007226C20FF22A65DC9DF7588BE305E5CCC3F4941"
+    m,h = (s.decode('hex') for s in (M,RESULT))
+    assert H(m)==h
 
 

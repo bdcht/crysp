@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+import pytest
 
 from crysp.threefish import *
 
@@ -47,11 +47,10 @@ vectors = [('0'*64 ,                                                            
             "3313f4150a5716b30ed5f569288ae974ce2b4347926fce57de44512177dd7cde"),
            ]
 
-for v in vectors:
+@pytest.mark.parametrize('v',vectors)
+def test_threefish(v):
     k,t,m,c = (s.decode('hex') for s in v)
     F = Threefish(k,t)
     assert F.enc(m)==c
     assert F.dec(c)==m
-
-
 
