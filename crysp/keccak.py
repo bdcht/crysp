@@ -1,7 +1,7 @@
 # -*- coding: latin-1 -*-
 
 # This code is part of crysp
-# Copyright (C) 2013 Axel Tillequin (bdcht3@gmail.com) 
+# Copyright (C) 2013 Axel Tillequin (bdcht3@gmail.com)
 # published under GPLv2 license
 
 from crysp.bits import *
@@ -94,7 +94,7 @@ class Keccak(object):
 
     def iterblocks(self,M,bitlen=None):
         needed = len(M)*8
-        # handle NIST MSB alignment to Keccak LSB alignment for last byte 
+        # handle NIST MSB alignment to Keccak LSB alignment for last byte
         # (see Keccak SHA-3 submission §6.1):
         if bitlen:
             assert bitlen<=needed

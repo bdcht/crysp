@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # This code is part of crysp
-# Copyright (C) 2012 Axel Tillequin (bdcht3@gmail.com)
+# Copyright (C) 2008 Axel Tillequin (bdcht3@gmail.com)
 # published under GPLv2 license
 
 from crysp.poly import *
