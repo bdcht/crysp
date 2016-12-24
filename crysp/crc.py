@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 # This code is part of crysp
 # Copyright (C) 2009 Axel Tillequin (bdcht3@gmail.com) 
@@ -41,7 +42,7 @@ TABLE32_1b= crc_back_table(POLY32_1)
 
 def crc(data,table,Xinit=0,Xfinal=None):
   if not isinstance(data,str):
-    print "crc: input not string type"
+    print("crc: input not string type")
     return None
   r = Bits(Xinit,table[0].size)
   for b in data:
@@ -53,10 +54,10 @@ def crc(data,table,Xinit=0,Xfinal=None):
 
 def crc_back_pos(data,pos,table,Xfinal,c):
   if not isinstance(data,str):
-    print "crc: input not string type"
+    print("crc: input not string type")
     return None
   if not (pos in range(len(data))):
-    print "crc_back: pos error"
+    print("crc_back: pos error")
     return None
   N = table[0].size
   r = Bits(Xfinal,N)
@@ -68,18 +69,18 @@ def crc_back_pos(data,pos,table,Xfinal,c):
 
 # CRC-32:
 def crc32(data):
-  return crc(data,TABLE32_1,0xffffffffL)^0xffffffffL
+  return crc(data,TABLE32_1,0xffffffff)^0xffffffff
 
 # CRC-32 backward to pos. 
 # Returned value is before final XOR (0xffffffff)
 def crc32_back_pos(data,pos,c):
-  return crc_back_pos(data,pos,TABLE32_1b,0xffffffffL,c)
+  return crc_back_pos(data,pos,TABLE32_1b,0xffffffff,c)
 
 # CRC-32 fix last 4 bytes in data to obtain target.
 def crc32_fix(data,target):
   if isinstance(target,str):
     target = int(target,0)
-  t = target^0xffffffffL
+  t = target^0xffffffff
   # compute a = t*inv(x^32) mod POLY32_1.
   a = 0
   for i in range(32):
@@ -87,21 +88,21 @@ def crc32_fix(data,target):
     else  : a =  a>>1
     if t&1: a = a^POLY32_1i.ival
     t=t>>1
-  a = a^crc(data[:-4],TABLE32_1,0xffffffffL)
+  a = a^crc(data[:-4],TABLE32_1,0xffffffff)
   return data[:-4]+struct.pack('I',a)
 
 # CRC-32 alternate fix 4 bytes in data at position pos.
 def crc32_fix_pos(data,pos,target):
-  c_fw = crc(data[:pos],TABLE32_1,0xffffffffL)
+  c_fw = crc(data[:pos],TABLE32_1,0xffffffff)
   c_bw = crc32_back_pos(struct.pack('I',c_fw)+data[pos+4:],0,target)
   return data[:pos]+struct.pack('I',c_bw)+data[pos+4:]
 
 if __name__ == '__main__':
   import sys
   if len(sys.argv)<2:
-    print "Usage: crc [[-pos k] -crc target] <message>"
-    print "  pos: position in message where to fix 4 bytes (default to last 4 bytes)"
-    print "  crc: target crc32 value, integer or '0x...' string format."
+    print("Usage: crc [[-pos k] -crc target] <message>")
+    print("  pos: position in message where to fix 4 bytes (default to last 4 bytes)")
+    print("  crc: target crc32 value, integer or '0x...' string format.")
     sys.exit(1)
   data = sys.argv.pop()
   sys.argv.pop(0)
@@ -111,14 +112,14 @@ if __name__ == '__main__':
     arg = sys.argv.pop(0)
     if (arg=='-pos') and len(sys.argv)>0: pos = int(sys.argv.pop(0))
     if (arg=='-crc') and len(sys.argv)>0: target = int(sys.argv.pop(0),0)
-  print "data   =",data
-  print "pos    =",pos
-  print "target =",target
+  print("data   =",data)
+  print("pos    =",pos)
+  print("target =",target)
   r1 = crc32(data)
-  print "original crc32 = 0x%08x (%d)" %(r1,r1)
+  print("original crc32 = 0x%08x (%d)" %(r1,r1))
   if target:
     if pos: newdata = crc32_fix_pos(data,pos,target)
     else  : newdata = crc32_fix(data,target)
-    print newdata
+    print(newdata)
     r2 = crc32(newdata)
-    print "new crc32 = 0x%08x (%d)" %(r2,r2)
+    print("new crc32 = 0x%08x (%d)" %(r2,r2))

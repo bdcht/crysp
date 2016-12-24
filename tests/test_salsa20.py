@@ -12,7 +12,7 @@ v  = Bits(''.join(map(chr,n)),bitorder=1)
 
 def test_salsa20_000_hash():
     r = Salsa20().hash(m)
-    rl = [ord(c) for c in r]
+    rl = list(newbytes(r))
     assert rl[0:3] == [109,42,178]
     assert rl[-3:] == [19,48,202]
 
@@ -20,7 +20,7 @@ def test_salsa20_001_cipher():
     K = Bits(''.join([chr(x) for x in k0+k1]),bitorder=1)
     S = Salsa20(K)
     S.p[6:10] = v.split(32)
-    res = [ord(x) for x in pack(S.core(S.p))]
+    res = list(newbytes(pack(S.core(S.p))))
     assert res[0:5] == [69,37,68,39,41]
     assert res[-5:] == [236,234,103,246,74]
 
@@ -28,6 +28,6 @@ def test_salsa20_002_cipher():
     K = Bits(''.join([chr(x) for x in k0]),bitorder=1)
     S = Salsa20(K)
     S.p[6:10] = v.split(32)
-    res = [ord(x) for x in pack(S.core(S.p))]
+    res = list(newbytes(pack(S.core(S.p))))
     assert res[0:5] == [39,173,46,248,30]
     assert res[-5:] == [181,104,182,177,193]

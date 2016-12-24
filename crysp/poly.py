@@ -76,7 +76,7 @@ class Poly(object):
       for x in range(self.dim):
           yield self.e(x)
 
-# value comparison methods ('==' and '<>' operators).
+# value comparison methods ('==' and '!=' operators).
 #------------------------------------------------------------------------------
   def __eq__(self,a):
       if isinstance(a,Poly):

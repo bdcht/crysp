@@ -24,7 +24,7 @@ class Threefish(object):
         assert T.size==128
         self.T = T
         # get 64-bits words and rounds:
-        self.Nw = self.K.size/64
+        self.Nw = self.K.size//64
         self.Nr = 72 if self.Nw<16 else 80
         # set pi permutation and inverse:
         self.__pi={ 4: (0,3,2,1),
@@ -91,33 +91,33 @@ class Threefish(object):
         v = [M[i:i+64] for i in range(0,M.size,64)]
         for d in range(self.Nr):
             if d%4==0:
-                kd = self.__ks(d/4)
+                kd = self.__ks(d//4)
                 e = [ (v[i]+kd[i]) for i in range(self.Nw) ]
             else:
                 e = v
             f = []
             for j in range(0,self.Nw,2):
-                f.extend(self.__MIX(e[j],e[j+1],d,j/2))
+                f.extend(self.__MIX(e[j],e[j+1],d,j//2))
             for i in range(self.Nw):
                 v[i] = f[self.__pi[i]]
-        k = self.__ks(self.Nr/4)
+        k = self.__ks(self.Nr//4)
         c = [(v[i]+k[i]) for i in range(self.Nw)]
-        return ''.join(map(pack,c))
+        return b''.join(map(pack,c))
 
     def dec(self,C):
         if isinstance(C,str): C=Bits(C,bitorder=1)
         assert C.size==self.K.size
         c = [C[i:i+64] for i in range(0,C.size,64)]
-        k = self.__ks(self.Nr/4)
+        k = self.__ks(self.Nr//4)
         v = [(c[i]-k[i]) for i in range(self.Nw)]
         for d in reversed(range(self.Nr)):
             f = [ v[self.__piinv[i]] for i in range(self.Nw) ]
             e = []
             for j in range(0,self.Nw,2):
-                e.extend(self.__MIXinv(f[j],f[j+1],d,j/2))
+                e.extend(self.__MIXinv(f[j],f[j+1],d,j//2))
             if d%4==0:
-                kd = self.__ks(d/4)
+                kd = self.__ks(d//4)
                 v = [ (e[i]-kd[i]) for i in range(self.Nw) ]
             else:
                 v = e
-        return ''.join(map(pack,v))
+        return b''.join(map(pack,v))

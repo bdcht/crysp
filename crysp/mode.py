@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+from builtins import bytes as newbytes
 
 # This code is part of crysp
 # Copyright (C) 2013 Axel Tillequin (bdcht3@gmail.com) 
@@ -6,7 +8,7 @@
 
 from crysp.padding import *
 
-import StringIO
+from io import BytesIO
 
 # -----------------------------------------------------------------------------
 # Mode of Operation Core class, default padding is nopadding.
@@ -17,7 +19,7 @@ class Mode(object):
 
     @property
     def len(self):
-        return self._cipher.size/8
+        return self._cipher.size//8
 
     def iterblocks(self,M,**kargs):
         for B in self.pad.iterblocks(M,**kargs):
@@ -31,7 +33,9 @@ class Mode(object):
 
     # xor input byte strings (over min length):
     def xorstr(self,a,b):
-        return ''.join(map(lambda x,y: chr(x^y), map(ord,a),map(ord,b)))
+        a = newbytes(a)
+        b = newbytes(b)
+        return newbytes([x^y for (x,y) in zip(a,b)])
 
 # -----------------------------------------------------------------------------
 # Electronic Code Book, default padding is pkcs7
@@ -43,16 +47,16 @@ class ECB(Mode):
         C = []
         for b in self.iterblocks(M):
             C.append(self._cipher.enc(b))
-        return ''.join(C)
+        return b''.join(C)
     # decryption mode
     def dec(self,C):
         n,p = divmod(len(C),self.len)
         assert p==0
-        P = StringIO.StringIO(C)
+        P = BytesIO(C)
         M = []
         for b in range(n):
             M.append(self._cipher.dec(P.read(self.len)))
-        return self.pad.remove(''.join(M))
+        return self.pad.remove(b''.join(M))
 
 # -----------------------------------------------------------------------------
 # Electronic Code Book with Cypher Text Stealing (nopadding)
@@ -70,11 +74,11 @@ class CTS_ECB(Mode):
             b = self.iterblocks(M[n*self.len:])[0]
             C.append(self._cipher.enc(b+clast[p:]))
             C.append(clast[0:p])
-        return ''.join(C)
+        return b''.join(C)
     # decryption mode
     def dec(self,C):
         n,p = divmod(len(C),self.len)
-        P = StringIO.StringIO(C)
+        P = BytesIO(C)
         M = []
         for b in range(n):
             M.append(self._cipher.dec(P.read(self.len)))
@@ -82,7 +86,7 @@ class CTS_ECB(Mode):
             mlast = M.pop()
             M.append(self._cipher.dec(P.read(p)+mast[p:]))
             M.append(mlast[:p])
-        return ''.join(M)
+        return b''.join(M)
 
 # -----------------------------------------------------------------------------
 # Cipher Block Chaining, default padding is pkcs7
@@ -97,7 +101,7 @@ class CBC(Mode):
         for b in self.iterblocks(M):
             x = self.xorstr(b,C[-1])
             C.append(self._cipher.enc(x))
-        return ''.join(C)
+        return b''.join(C)
     # decryption mode
     def dec(self,C):
         l = self.len
@@ -108,7 +112,7 @@ class CBC(Mode):
             c = C[-l:]
             C = C[:-l]
             M.insert(0,self.xorstr(C[-l:],self._cipher.dec(c)))
-        return self.pad.remove(''.join(M))
+        return self.pad.remove(b''.join(M))
 
 # -----------------------------------------------------------------------------
 # Cipher Block Chaining with Cipher Text Stealing (nopadding)
@@ -126,11 +130,11 @@ class CTS_CBC(Mode):
             C.append(self._cipher.enc(x))
         if p>0:
             clast = C.pop()
-            b = self.iterblocks(M[n*self.len:]).ljust(self.len,'\0')
+            b = self.iterblocks(M[n*self.len:]).ljust(self.len,b'\0')
             x = self.xorstr(b,clast)
             C.append(self._cipher.enc(x))
             C.append(clast[:p])
-        return ''.join(C)
+        return b''.join(C)
     # decryption mode
     def dec(self,C):
         l = self.len
@@ -150,7 +154,7 @@ class CTS_CBC(Mode):
             c = C[-l:]
             C = C[:-l]
             M.insert(0,self.xorstr(C[-l:],self._cipher.dec(c)))
-        return ''.join(M)
+        return b''.join(M)
 
 # -----------------------------------------------------------------------------
 # Counter mode with provided iterable counter (no padding)
@@ -160,7 +164,7 @@ class CTR(Mode):
         try:
             self.counter = (c for c in counter)
         except TypeError:
-            print counter, 'is not iterable'
+            print(counter,'is not iterable')
 
     # encryption mode
     def enc(self,M):
@@ -172,18 +176,18 @@ class CTR(Mode):
             k = self._cipher.enc(c)
             x = self.xorstr(b,k)
             C.append(x)
-        return ''.join(C)
+        return b''.join(C)
     # decryption mode
     def dec(self,C):
         n,p = divmod(len(C),self.len)
         assert p==0
         M = []
-        P = StringIO.StringIO(C)
+        P = BytesIO(C)
         for c in range(n):
             k = self._cipher.enc(self.__cache.pop(0))
             x = self.xorstr(P.read(self.len),k)
             M.append(x)
-        return self.pad.remove(''.join(M))
+        return self.pad.remove(b''.join(M))
 
 # -----------------------------------------------------------------------------
 # Chain mode of Operation Core class for Digest algorithms, nopadding default
@@ -202,4 +206,7 @@ class Chain(object):
 
     # xor input byte strings (over min length):
     def xorstr(self,a,b):
-        return ''.join(map(lambda x,y: chr(x^y), map(ord,a),map(ord,b)))
+        a = newbytes(a)
+        b = newbytes(b)
+        return newbytes([x^y for (x,y) in zip(a,b)])
+

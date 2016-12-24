@@ -33,10 +33,10 @@ class Chacha(Salsa20):
         assert self.K is not None
         assert isinstance(v,Bits) and v.size==64
         self.p[14:16] = v.split(32)
-        maxlen = 1L<<64
-        i = 0L
+        maxlen = 1<<64
+        i = 0
         while i<maxlen:
-            self.p[12:14] = (i&0xffffffffL,i>>32)
+            self.p[12:14] = (i&0xffffffff,i>>32)
             yield self.core(self.p,dround=self.dround)
             i += 1
 

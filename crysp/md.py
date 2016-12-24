@@ -45,7 +45,7 @@ class MD4(object):
             W.extend([W[i] for i in (0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15)])
             W.extend([W[i] for i in (0,8,4,12,2,10,6,14,1,9,5,13,3,11,7,15)])
             for i in range(3*16):
-                r = i/16
+                r = i//16
                 T = rol(a+self.ft[r](b,c,d)+W[i]+self.K[r],self.st[r][i%4])
                 a = d
                 d = c
@@ -96,7 +96,7 @@ class MD5(MD4):
             W.extend([W[i] for i in (5,8,11,14,1,4,7,10,13,0,3,6,9,12,15,2)])
             W.extend([W[i] for i in (0,7,14,5,12,3,10,1,8,15,6,13,4,11,2,9)])
             for i in range(4*16):
-                r = i/16
+                r = i//16
                 T = b+rol(a+self.ft[r](b,c,d)+W[i]+self.K[i],self.st[r][i%4])
                 a = d
                 d = c
@@ -113,35 +113,35 @@ from crysp.poly import Poly
 from crysp.padding import Nullpadding
 from crysp.utils.operators import concat
 
-Q = [0x7311c2812425cfa0L,
-     0x6432286434aac8e7L,
-     0xb60450e9ef68b7c1L,
-     0xe8fb23908d9f06f1L,
-     0xdd2e76cba691e5bfL,
-     0x0cd0d63b2c30bc41L,
-     0x1f8ccf6823058f8aL,
-     0x54e5ed5b88e3775dL,
-     0x4ad12aae0a6d6031L,
-     0x3e7f16bb88222e0dL,
-     0x8af8671d3fb50c2cL,
-     0x995ad1178bd25c31L,
-     0xc878c1dd04c4b633L,
-     0x3b72066c7a1552acL,
-     0x0d6f3522631effcbL]
+Q = [0x7311c2812425cfa0,
+     0x6432286434aac8e7,
+     0xb60450e9ef68b7c1,
+     0xe8fb23908d9f06f1,
+     0xdd2e76cba691e5bf,
+     0x0cd0d63b2c30bc41,
+     0x1f8ccf6823058f8a,
+     0x54e5ed5b88e3775d,
+     0x4ad12aae0a6d6031,
+     0x3e7f16bb88222e0d,
+     0x8af8671d3fb50c2c,
+     0x995ad1178bd25c31,
+     0xc878c1dd04c4b633,
+     0x3b72066c7a1552ac,
+     0x0d6f3522631effcb]
 
 rin = [10,  5, 13, 10, 11, 12,  2,  7, 14, 15,  7, 13, 11,  7,  6, 12]
 lin = [11, 24,  9, 16, 15,  9, 27, 15,  6,  2, 29,  8, 15,  5, 31,  9]
 
 class MD6(object):
-    def __init__(self,d=512,Key='',L=0):
+    def __init__(self,d=512,Key=b'',L=0):
         self.size = d
         self.chunksize = 1024
         self.blocksize = 3*self.chunksize
         self.wsize = 64
-        r = 40+(d/4)
+        r = 40+(d//4)
         if Key: r = max(80,r)
         self.keylen = len(Key)
-        Key = Key[:64].ljust(64,'\0')
+        Key = Key[:64].ljust(64,b'\0')
         self.K = Poly(struct.unpack('>8Q',Key),self.wsize)
         self.rounds = r
         self.L = L
@@ -155,7 +155,7 @@ class MD6(object):
             if len(M)==128:
                 h = Bits(M)>>(1024-self.size)
                 h.size = self.size
-                return hex(h)
+                return h.bytes()
 
     def SEQ(self,M,bitlen=None):
         pad = Nullpadding(3072)
@@ -219,6 +219,6 @@ class MD6(object):
             A[i] = x^(x<<lin[j])
             j += 1
             if j==16:
-                S = rol(S,1)^(S&0x7311c2812425cfa0L)
+                S = rol(S,1)^(S&0x7311c2812425cfa0)
                 j=0
         return A[-16:]

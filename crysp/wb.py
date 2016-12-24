@@ -38,7 +38,7 @@ class WhiteDES(object):
                 blk[t:nt] = self.KT[r][n][blk[t:nt]]
                 t = nt
             blk = self.__FX(blk)
-        return hex(blk[self.tM3])
+        return (blk[self.tM3]).bytes()
 
     def dec(self,C):
         assert len(C)==8

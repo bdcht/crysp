@@ -35,7 +35,7 @@ class SHA1(object):
         self.padmethod = SHApadding(self.blocksize,self.wsize)
 
     def iterblocks(self,M,bitlen=None,padding=False):
-        osize = self.blocksize/8
+        osize = self.blocksize//8
         fmt = '>16L' if self.wsize==32 else '>16Q'
         for B in self.padmethod.iterblocks(M,bitlen=bitlen,padding=padding):
             W = struct.unpack(fmt,B)
@@ -64,18 +64,18 @@ class SHA1(object):
             self.H[2] += c
             self.H[3] += d
             self.H[4] += e
-        return ''.join([pack(h,'>L') for h in self.H])
+        return b''.join([pack(h,'>L') for h in self.H])
 
 class SHA2(SHA1):
     def __init__(self,size,t=0):
         assert size in (224,256,384,512)
         self.size = size
-        self.outlen = self.size/8
+        self.outlen = self.size//8
         self.version = 2
         if t>0:
             assert self.size==512
             assert t in (224,256)
-            self.outlen = t/8
+            self.outlen = t//8
         # set functions and constants:
         if self.size  in (224,256):
             self.blocksize = 512
@@ -201,5 +201,5 @@ class SHA2(SHA1):
             self.H[5] += f
             self.H[6] += g
             self.H[7] += h
-        X = ''.join([pack(h,'>L') for h in self.H])
+        X = b''.join([pack(h,'>L') for h in self.H])
         return X[:self.outlen]

@@ -2,6 +2,7 @@
 # This code is part of crysp
 # Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
+from __future__ import print_function
 
 import matplotlib
 matplotlib.use('GTKCairo',warn=False)
@@ -14,9 +15,9 @@ def hist(files):
         try:
             f = open(fname)
         except:
-            print 'error opening file %s'%fname
+            print('error opening file %s'%fname)
             continue
-        print 'processing file %s ...'%fname,
+        print('processing file %s ...'%fname,end='')
         s = map(ord,f.read())
         n = len(s)-1
         N += n
@@ -25,7 +26,7 @@ def hist(files):
                 H['%c%c'%(s[i],s[i+1])] += 1
             except KeyError:
                 H['%c%c'%(s[i],s[i+1])] = 1
-        print 'done.'
+        print('done.')
     IC = 0
     for k in H.iterkeys():
         IC += H[k]*(H[k]-1)

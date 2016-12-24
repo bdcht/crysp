@@ -10,22 +10,22 @@ from crysp.utils.operators import ror
 from crysp.sha import SHA2
 from crysp.padding import Blakepadding
 
-PI= [0x243F6A8885A308D3L,
-     0x13198A2E03707344L,
-     0xA4093822299F31D0L,
-     0x082EFA98EC4E6C89L,
-     0x452821E638D01377L,
-     0xBE5466CF34E90C6CL,
-     0xC0AC29B7C97C50DDL,
-     0x3F84D5B5B5470917L,
-     0x9216D5D98979FB1BL,
-     0xD1310BA698DFB5ACL,
-     0x2FFD72DBD01ADFB7L,
-     0xB8E1AFED6A267E96L,
-     0xBA7C9045F12C7F99L,
-     0x24A19947B3916CF7L,
-     0x0801F2E2858EFC16L,
-     0x636920D871574E69L,
+PI= [0x243F6A8885A308D3,
+     0x13198A2E03707344,
+     0xA4093822299F31D0,
+     0x082EFA98EC4E6C89,
+     0x452821E638D01377,
+     0xBE5466CF34E90C6C,
+     0xC0AC29B7C97C50DD,
+     0x3F84D5B5B5470917,
+     0x9216D5D98979FB1B,
+     0xD1310BA698DFB5AC,
+     0x2FFD72DBD01ADFB7,
+     0xB8E1AFED6A267E96,
+     0xBA7C9045F12C7F99,
+     0x24A19947B3916CF7,
+     0x0801F2E2858EFC16,
+     0x636920D871574E69,
     ]
 
 sigma = [[ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15],
@@ -47,7 +47,7 @@ class Blake(object):
         assert size in (224,256,384,512)
         self.blocksize = 1024 if size>256 else 512
         self.wsize = 64 if size>256 else 32
-        self.outlen = self.size/8
+        self.outlen = self.size//8
 
     def initstate(self,salt=0):
         c64 = Poly(PI,size=64)
@@ -129,7 +129,7 @@ class Blake2(Blake):
         self.padmethod = Nullpadding(self.blocksize)
         self.outlen = kargs.get('outlen',self.outlen)
         self.rounds = 12 if self.size>256 else 10
-        l = self.wsize/4
+        l = self.wsize//4
         if salt is '': salt = '\0'*l
         if pers is '': pers = '\0'*l
         self.keylen=keylen
@@ -196,7 +196,7 @@ class Blake2(Blake):
             v[0:8] = self.H
             v[8:12] = self.IV[0:4]
             # counter of *bytes*, in little-endian
-            t = Bits(self.padmethod.bitcnt/8,2*self.wsize).split(self.wsize)
+            t = Bits(self.padmethod.bitcnt//8,2*self.wsize).split(self.wsize)
             v[12:14] = Poly(t,self.wsize)^self.IV[4:6]
             v[14:16] = self.f^self.IV[6:8]
             for r in range(self.rounds):
