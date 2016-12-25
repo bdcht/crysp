@@ -6,7 +6,7 @@ from __future__ import print_function
 # published under GPLv2 license
 
 import struct
-from crysp.bits import Bits
+from crysp.bits import *
 
 #CRC32 :
 #=======
@@ -16,7 +16,7 @@ POLY32_1 = Bits(0xEDB88320,32)
 POLY32_1i= Bits(0x5B358FD3,32)
 
 def crc_table(P):
-  table = range(256)
+  table = list(range(256))
   for n in table:
     c=Bits(n,P.size)
     for k in range(8):
@@ -41,29 +41,30 @@ TABLE32_1 = crc_table(POLY32_1)
 TABLE32_1b= crc_back_table(POLY32_1)
 
 def crc(data,table,Xinit=0,Xfinal=None):
-  if not isinstance(data,str):
-    print("crc: input not string type")
+  if not isinstance(data,bytes):
+    print("crc: bytes input required")
     return None
   r = Bits(Xinit,table[0].size)
-  for b in data:
-    p = table[(r.ival^ord(b))&0xff]
+  for b in newbytes(data):
+    p = table[(r.ival^b)&0xff]
     r = (r>>8)^p
   if Xfinal:
     r = r^Bits(Xfinal)
   return r.ival
 
 def crc_back_pos(data,pos,table,Xfinal,c):
-  if not isinstance(data,str):
-    print("crc: input not string type")
+  if not isinstance(data,bytes):
+    print("crc: bytes input required")
     return None
-  if not (pos in range(len(data))):
+  data = newbytes(data)
+  if not (0<=pos<len(data)):
     print("crc_back: pos error")
     return None
   N = table[0].size
   r = Bits(Xfinal,N)
   r = r^c
   for b in data[pos::][::-1]:
-    p = table[r.ival>>(N-8)]^ord(b)
+    p = table[r.ival>>(N-8)]^b
     r = (r<<8)^p
   return r.ival
 

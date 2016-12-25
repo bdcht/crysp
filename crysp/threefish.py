@@ -4,8 +4,8 @@
 # Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
 
-from crysp.bits import Bits,pack
-from crysp.utils.operators import rol,ror
+from crysp.bits import *
+from crysp.utils.operators import *
 
 # Threefish block cipher primitive provides enc/dec methods
 # for encryption and decryption of one data block.
@@ -86,7 +86,7 @@ class Threefish(object):
         return [y0-x1,x1]
 
     def enc(self,M):
-        if isinstance(M,str): M=Bits(M,bitorder=1)
+        if isinstance(M,bytes): M=Bits(M,bitorder=1)
         assert M.size==self.K.size
         v = [M[i:i+64] for i in range(0,M.size,64)]
         for d in range(self.Nr):
@@ -102,10 +102,10 @@ class Threefish(object):
                 v[i] = f[self.__pi[i]]
         k = self.__ks(self.Nr//4)
         c = [(v[i]+k[i]) for i in range(self.Nw)]
-        return b''.join(map(pack,c))
+        return b''.join([pack(x) for x in c])
 
     def dec(self,C):
-        if isinstance(C,str): C=Bits(C,bitorder=1)
+        if isinstance(C,bytes): C=Bits(C,bitorder=1)
         assert C.size==self.K.size
         c = [C[i:i+64] for i in range(0,C.size,64)]
         k = self.__ks(self.Nr//4)
@@ -120,4 +120,4 @@ class Threefish(object):
                 v = [ (e[i]-kd[i]) for i in range(self.Nw) ]
             else:
                 v = e
-        return b''.join(map(pack,v))
+        return b''.join([pack(x) for x in v])

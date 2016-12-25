@@ -112,7 +112,7 @@ class Blake(object):
                 G(W,r,7,v,3,4,9,14)
             self.H[0:4] ^= (s^v[0:4]^v[8:12])
             self.H[4:8] ^= (s^v[4:8]^v[12:16])
-        return ''.join([pack(h,'>L') for h in self.H])[:self.outlen]
+        return b''.join([pack(h,'>L') for h in self.H])[:self.outlen]
 
 blake224 = Blake(224)
 blake256 = Blake(256)
@@ -124,14 +124,14 @@ from crysp.padding import Nullpadding
 
 class Blake2(Blake):
 
-    def initstate(self,salt='',pers='',keylen=0,**kargs):
+    def initstate(self,salt=b'',pers=b'',keylen=0,**kargs):
         super(Blake2,self).initstate(0)
         self.padmethod = Nullpadding(self.blocksize)
         self.outlen = kargs.get('outlen',self.outlen)
         self.rounds = 12 if self.size>256 else 10
         l = self.wsize//4
-        if salt is '': salt = '\0'*l
-        if pers is '': pers = '\0'*l
+        if salt is b'': salt = b'\0'*l
+        if pers is b'': pers = b'\0'*l
         self.keylen=keylen
         assert 0<self.outlen<=self.wsize
         assert self.keylen<=self.wsize
@@ -143,7 +143,7 @@ class Blake2(Blake):
         P += pack(self.leafl)
         P += pack(self.noffset)
         P += pack(Poly([self.ndepth,self.inner],size=8))
-        if self.size==512: P += '\0'*14
+        if self.size==512: P += b'\0'*14
         P += salt+pers
         self.P = Poly(Bits(P,bitorder=1).split(self.wsize),self.wsize)
         self.H = self.IV ^ self.P
@@ -210,7 +210,7 @@ class Blake2(Blake):
                 G(W,r,7,v,3,4,9,14)
             self.H = self.H^(v[0:8]^v[8:16])
         # output hash string in little endian:
-        return ''.join([pack(h) for h in self.H])[:self.outlen]
+        return b''.join([pack(h) for h in self.H])[:self.outlen]
 
 blake2b = Blake2(512)
 blake2s = Blake2(256)

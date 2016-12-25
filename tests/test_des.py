@@ -1,10 +1,10 @@
 import pytest
-
+import codecs
 from crysp.wb import *
 from crysp.mode import ECB,CBC
 
 def test_des_wb():
-    K = "0123456789ABCDEF".decode('hex')
+    K = codecs.decode(b"0123456789ABCDEF",'hex')
     bK = Bits(K,64)
     b1 = b"Now is t"
     b2 = b"he time "

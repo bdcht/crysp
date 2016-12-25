@@ -8,7 +8,7 @@ from crysp.bits import *
 
 from io import BytesIO
 
-RC = range(24)
+RC = list(range(24))
 # Constants:
 RC[ 0] = Bits(0x0000000000000001,64)
 RC[ 1] = Bits(0x0000000000008082,64)
@@ -100,8 +100,8 @@ class Keccak(object):
             assert bitlen<=needed
             needed = bitlen
             if not self.duplexing:
-                b = Bits(M[-1],size=needed%8)[::-1]
-                M = M[:needed//8]+chr(b.ival)
+                b = Bits(M[-1:],size=needed%8)[::-1]
+                M = M[:needed//8]+newbytes([b.ival])
         r = self.r
         br,rr = divmod(r,8)
         P = BytesIO(M)

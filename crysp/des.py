@@ -14,7 +14,7 @@ class TDEA(object):
             assert K2 is None
             assert K3 is None
             K1,K2,K3 = K1[:8],K1[8:],K1[16:]
-            if K3=='': K3=K1
+            if K3==b'': K3=K1
         if K2 is None:
             assert K3 is None
             K2 = K1

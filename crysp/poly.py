@@ -14,13 +14,13 @@ class Poly(object):
       if isinstance(v,Poly):
           mask = v.mask
           self.ival = [x&mask for x in v.ival]
-      elif isinstance(v,(int,long)):
+      elif isinstance(v,int):
           self.ival = [v&mask]
       elif isinstance(v,(list,tuple)):
           self.ival = [int(x)&mask for x in v]
-      elif isinstance(v,str):
+      elif isinstance(v,bytes):
           mask = 0xff
-          self.ival = [ord(x) for x in v]
+          self.ival = list(newbytes(v))
       else:
           raise TypeError
       self.mask = mask
@@ -91,20 +91,20 @@ class Poly(object):
       return (self.ival!=a)
 
 # getitem operator defines b[i], b[i:j] and b[list] which returns the requested
-# bit values as a long (0L,1L) or a list of such longs.
+# bit values as a int (0,1) or a list of such ints.
 #------------------------------------------------------------------------------
   def __getitem__(self,i):
-      if isinstance(i,(int,long,slice)):
+      if isinstance(i,(int,slice)):
           return Poly(self.ival[i],self.size)
       else:
           return Poly([self.ival[j] for j in i],self.size)
 
 # setitem operator defines b[i], b[i:j] and b[list] which allow to affect new
-# values to these bits, from another object, int/long value or a bit list.
+# values to these bits, from another object, int value or a bit list.
 #------------------------------------------------------------------------------
   def __setitem__(self,i,v):
       if isinstance(v,Bits): v=v.int()
-      if isinstance(i,(int,long)):
+      if isinstance(i,int):
           self.ival[i] = v&self.mask
       else:
           if isinstance(i,slice):

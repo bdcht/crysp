@@ -55,7 +55,7 @@ class MD4(object):
             self.H[1] += b
             self.H[2] += c
             self.H[3] += d
-        return ''.join([pack(h) for h in self.H])
+        return b''.join([pack(h) for h in self.H])
 
 #------------------------------------------------------------------------------
 class MD5(MD4):
@@ -106,7 +106,7 @@ class MD5(MD4):
             self.H[1] += b
             self.H[2] += c
             self.H[3] += d
-        return ''.join([pack(h) for h in self.H])
+        return b''.join([pack(h) for h in self.H])
 
 #------------------------------------------------------------------------------
 from crysp.poly import Poly
@@ -202,7 +202,7 @@ class MD6(object):
             W[25:89] = B[i]
             C.append(self.f(W))
         Ml = concat(C)
-        return ''.join((pack(c,'>L') for c in Ml))
+        return b''.join((pack(c,'>L') for c in Ml))
 
     def f(self,N):
         C = Poly(0,64,dim=16)

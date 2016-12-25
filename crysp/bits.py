@@ -4,6 +4,7 @@
 
 import struct
 import codecs
+from builtins import int
 from builtins import bytes as newbytes
 
 # reverse all bits in a byte:
@@ -18,7 +19,7 @@ def pack(obj,fmt='<L'):
     if fmt=='>L': s.reverse()
     return newbytes(s)
 
-# generalize struct.unpack to return one long value of
+# generalize struct.unpack to return one int value of
 # arbitrary bit length.
 def unpack(istr,bigend=False):
     r = len(istr)
@@ -50,7 +51,7 @@ hextab_r = ('0000','1000','0100','1100',
 # mask: automatically adjusted to size, but can be redefined if needed.
 #
 # Bits instance can be initialised from:
-#  - int/long values: bits are ordered from LSB to MSB.
+#  - int values: bits are ordered from LSB to MSB.
 #  - list (of bits) : bits are ordered as listed.
 #  - strings        : by default, bit0 is MSB of 1st byte! (stream mode)
 #                     This means that Bits('\x80',5) is the sequence
@@ -79,7 +80,7 @@ class Bits(object):
       self.ival = v.ival
       self.__sz = v.size
       self.mask = v.mask
-    elif isinstance(v,(int,long)):
+    elif isinstance(v,int):
       self.ival = abs(v*int(1))
       if self.ival>0 and (size is None):
         self.size = self.ival.bit_length()
@@ -165,7 +166,7 @@ class Bits(object):
   def bytes(self):
     return self.__bytes__()
 
-  def __hex__(self):
+  def hex(self):
     return codecs.encode(self.__bytes__(),'hex')
 
   def split(self,subsize,bigend=False):
@@ -204,7 +205,7 @@ class Bits(object):
       yield self.bit(x)
 
 # getitem operator defines b[i], b[i:j] and b[list] which returns the requested
-# bit values as a long (0L,1L) or a list of such longs.
+# bit values as a int (0,1) or a list of such ints.
 #------------------------------------------------------------------------------
   def __getitem__(self,i):
     if isinstance(i,int):
@@ -223,7 +224,7 @@ class Bits(object):
       return Bits(v,len(i))
 
 # setitem operator defines b[i], b[i:j] and b[list] which allow to affect new
-# values to these bits, from another object, int/long value or a bit list.
+# values to these bits, from another object, int value or a bit list.
 #------------------------------------------------------------------------------
   def __setitem__(self,i,v):
     if isinstance(i,int):
@@ -361,7 +362,7 @@ class Bits(object):
     return Bits(self.ival | obj.ival<<self.size, size)
 
   def bitlist(self,dir=1):
-    l = map(int,str(self))
+    l = list(self)
     if dir==-1: l.reverse()
     return l
 

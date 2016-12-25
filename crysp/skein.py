@@ -5,10 +5,11 @@
 # published under GPLv2 license
 
 from crysp.threefish import Threefish
-from crysp.bits import Bits,pack
+from crysp.bits import *
 from crysp.mode import Chain
 
 from io import BytesIO
+from functools import reduce
 
 class Skein(object):
     def __init__(self,Nb,No,
@@ -27,7 +28,7 @@ class Skein(object):
         self.Yl = Yl
         self.Yf = Yf
         self.Ym = Ym
-        self.C += chr(Yl)+chr(Yf)+chr(Ym)+b'\0'*13
+        self.C += newbytes([Yl,Yf,Ym])+b'\0'*13
         self.key = key
         self.prs = prs
         self.PK  = PK
@@ -168,7 +169,7 @@ class Tweak(Bits):
     def __init__(self,b=None,**kargs):
         if b is None:
             Bits.__init__(self,0,128)
-            for k,v in kargs.iteritems():
+            for k,v in iter(kargs.items()):
                 if hasattr(self,k): setattr(self,k,v)
         else:
             Bits.__init__(self,b)
