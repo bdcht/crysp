@@ -4,8 +4,12 @@
 
 import struct
 import codecs
-from builtins import int
 from builtins import bytes as newbytes
+
+try:
+    IntType = (int,long)
+except NameError:
+    IntType = (int,)
 
 # reverse all bits in a byte:
 def reverse_byte(b):
@@ -80,7 +84,7 @@ class Bits(object):
       self.ival = v.ival
       self.__sz = v.size
       self.mask = v.mask
-    elif isinstance(v,int):
+    elif isinstance(v,IntType):
       self.ival = abs(v*int(1))
       if self.ival>0 and (size is None):
         self.size = self.ival.bit_length()
@@ -208,7 +212,7 @@ class Bits(object):
 # bit values as a int (0,1) or a list of such ints.
 #------------------------------------------------------------------------------
   def __getitem__(self,i):
-    if isinstance(i,int):
+    if isinstance(i,IntType):
       return Bits(self.bit(i),1)
     elif isinstance(i,slice):
       start,stop,step = i.indices(self.__sz)
@@ -227,7 +231,7 @@ class Bits(object):
 # values to these bits, from another object, int value or a bit list.
 #------------------------------------------------------------------------------
   def __setitem__(self,i,v):
-    if isinstance(i,int):
+    if isinstance(i,IntType):
       assert v in (0,1)
       if   0<= i< self.__sz   : p=i
       elif 0<=-i<(self.__sz+1): p=self.__sz+i
