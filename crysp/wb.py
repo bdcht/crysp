@@ -38,7 +38,7 @@ class WhiteDES(object):
                 blk[t:nt] = self.KT[r][n][blk[t:nt]]
                 t = nt
             blk = self.__FX(blk)
-        return hex(blk[self.tM3])
+        return (blk[self.tM3]).bytes()
 
     def dec(self,C):
         assert len(C)==8
@@ -70,7 +70,7 @@ def table_rKT(r,K):
     rks = table_rKS(r,K)
     rkt = []
     for n in range(12):
-        rkt.append(range(256))
+        rkt.append(list(range(256)))
     for v in range(256):
         re = Bits(v,8)
         for n in range(8):
@@ -81,8 +81,8 @@ def table_rKT(r,K):
     return rks,tuple(rkt)
 
 def getrbits_T_in():
-    r = E(Poly(range(32))).ival
-    sr = set(range(32))
+    r = E(Poly(list(range(32)))).ival
+    sr = set(list(range(32)))
     rbits=[]
     for i in range(8):
         sr.remove(r[0])
@@ -92,7 +92,7 @@ def getrbits_T_in():
     return rbits+list(sr)
 
 def table_M1():
-    l,r = range(32),Poly(range(32,64))
+    l,r = range(32),Poly(list(range(32,64)))
     re = E(r).ival
     rbits = r.ival
     blk = []
@@ -115,11 +115,11 @@ def table_M1():
     table = []
     for b in range(12):
         table.extend(blk[b])
-    M = Poly(range(64))
+    M = Poly(list(range(64)))
     return IP(M)[table].ival
 
 def SRLRformat():
-    I = Poly(range(96))
+    I = Poly(list(range(96)))
     SR = Poly([0]*32)
     L = Poly([0]*32)
     R = Poly([0]*32)
@@ -138,7 +138,7 @@ def SRLRformat():
     return SR,L,R
 
 def ERLRformat():
-    I = Poly(range(96))
+    I = Poly(list(range(96)))
     ER = Poly([0]*48)
     L = Poly([0]*32)
     R = Poly([0]*32)
@@ -160,8 +160,8 @@ def table_M2():
     Mat = [Bits(0,96) for i in range(96)]
     SR,L,R = SRLRformat()
     newL = R.ival
-    newR = zip(P(SR),L)
-    RE = [newR[i] for i in E(Poly(range(len(L))))]
+    newR = list(zip(P(SR),L))
+    RE = [newR[i] for i in E(Poly(list(range(len(L)))))]
     m=[]
     for r in range(8):
         m += RE[0:6]+newL[0:2]

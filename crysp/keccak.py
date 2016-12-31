@@ -6,9 +6,9 @@
 
 from crysp.bits import *
 
-import StringIO
+from io import BytesIO
 
-RC = range(24)
+RC = list(range(24))
 # Constants:
 RC[ 0] = Bits(0x0000000000000001,64)
 RC[ 1] = Bits(0x0000000000008082,64)
@@ -51,7 +51,7 @@ class Keccak(object):
         assert b == r+c
         assert b in (25,50,100,200,400,800,1600)
         self.b = b
-        self.w = b/25 # w is supposed to fit the CPU word/register length.
+        self.w = b//25 # w is supposed to fit the CPU word/register length.
         l = {1:0,2:1,4:2,8:3,16:4,32:5,64:6}[self.w]
         self.n = 12+2*l
         self.setrate(r)
@@ -100,11 +100,11 @@ class Keccak(object):
             assert bitlen<=needed
             needed = bitlen
             if not self.duplexing:
-                b = Bits(M[-1],size=needed%8)[::-1]
-                M = M[:needed/8]+chr(b.ival)
+                b = Bits(M[-1:],size=needed%8)[::-1]
+                M = M[:needed//8]+newbytes([b.ival])
         r = self.r
         br,rr = divmod(r,8)
-        P = StringIO.StringIO(M)
+        P = BytesIO(M)
         # init iterator loop:
         Pi = P.read(br)
         Pb = Bits(0,size=0)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 # This code is part of crysp
 # Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
@@ -16,9 +17,9 @@ def hist(files):
         try:
             f = open(fname)
         except:
-            print 'error opening file %s'%fname
+            print('error opening file %s'%fname)
             continue
-        print 'processing file %s ...'%fname,
+        print('processing file %s ...'%fname,end='')
         for l in f.readlines():
             s = l.decode('latin1')
             for w in re.findall('\w+',s,flags=re.I|re.U):
@@ -27,7 +28,7 @@ def hist(files):
                     W[w] += 1
                 except KeyError:
                     W[w] = 1
-        print 'done.'
+        print('done.')
     for v in W.itervalues():
         v = v*1./N
     return W

@@ -5,14 +5,15 @@
 # published under GPLv2 license
 
 from crysp.threefish import Threefish
-from crysp.bits import Bits,pack
+from crysp.bits import *
 from crysp.mode import Chain
 
-import StringIO
+from io import BytesIO
+from functools import reduce
 
 class Skein(object):
     def __init__(self,Nb,No,
-                 schema="SHA3",version=1,Yl=0,Yf=0,Ym=0,
+                 schema=b"SHA3",version=1,Yl=0,Yf=0,Ym=0,
                  key=None,
                  prs=None,
                  PK=None,
@@ -20,14 +21,14 @@ class Skein(object):
                  nonce=None):
         # block length and output length:
         assert Nb in (256,512,1024)
-        self.Nb = Nb/8
+        self.Nb = Nb//8
         self.No = No
         # Config string (256 bits)
         self.C = schema+pack(Bits(version,16)//Bits(0,16)//Bits(No,64))
         self.Yl = Yl
         self.Yf = Yf
         self.Ym = Ym
-        self.C += chr(Yl)+chr(Yf)+chr(Ym)+'\0'*13
+        self.C += newbytes([Yl,Yf,Ym])+b'\0'*13
         self.key = key
         self.prs = prs
         self.PK  = PK
@@ -35,7 +36,7 @@ class Skein(object):
         self.non = nonce
 
     def _initstate(self):
-        self.G = '\0'*self.Nb
+        self.G = b'\0'*self.Nb
         if self.key!=None: self.update(self.key,'key')
         self.update(self.C,'cfg')
         if self.prs: self.update(self.prs,'prs')
@@ -63,7 +64,7 @@ class Skein(object):
             O.append(o)
             n += 1
         if l>lq: O[-1]=O[-1][:(lq-l)]
-        return ''.join(O)
+        return b''.join(O)
 
     def _treehash(self,M,bitlen=None):
         assert self.Yl>=1
@@ -80,7 +81,7 @@ class Skein(object):
             # spec for treehash is different from update
             # where Position evolves prior to UBI call...
             Ts.Position += Nl
-        M = ''.join(Mi)
+        M = b''.join(Mi)
         # (tree) re-hashing previous level:
         while len(M)>self.Nb:
             # new node level:
@@ -94,7 +95,7 @@ class Skein(object):
                 m = M[i:i+Nn]
                 Mi.append(UBI(Threefish,self.G,Ts)(m))
                 Ts.Position += Nn
-            M = ''.join(Mi)
+            M = b''.join(Mi)
         if len(M)==self.Nb:
             self.G = M
             return
@@ -133,7 +134,7 @@ class UBI(Chain):
         if bitlen is None:
             bitlen=len(M)*8
         else:
-            M = hex(Bits(M,bitlen)//Bits(1,1))
+            M = (Bits(M,bitlen)//Bits(1,1)).bytes()
         # get BitPad flag:
         B = 1 if bitlen%8 else 0
         # pad M' into M'':
@@ -143,10 +144,10 @@ class UBI(Chain):
         lp=0
         if l==0 or rb>0:
             lp = lb-rb
-            M += '\0'*lp
+            M += b'\0'*lp
             nb += 1
         # init generator:
-        P = StringIO.StringIO(M)
+        P = BytesIO(M)
         Ts = self.Ts
         Ts.First = 1
         for b in range(nb-1):
@@ -168,7 +169,7 @@ class Tweak(Bits):
     def __init__(self,b=None,**kargs):
         if b is None:
             Bits.__init__(self,0,128)
-            for k,v in kargs.iteritems():
+            for k,v in iter(kargs.items()):
                 if hasattr(self,k): setattr(self,k,v)
         else:
             Bits.__init__(self,b)

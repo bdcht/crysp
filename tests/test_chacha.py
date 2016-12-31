@@ -1,5 +1,4 @@
 import pytest
-
 from crysp.chacha import *
 
 def assertks(k,v):
@@ -88,7 +87,8 @@ def test_chacha_002():
 # -------------------------------------------------------------------
 
 def tobits(s):
-    return Bits(''.join([chr(int(x,16)) for x in s.split()]),bitorder=1)
+    x = newbytes([int(x,16) for x in s.split()])
+    return Bits(x,bitorder=1)
 
 def test_chacha_003():
     K = tobits("""

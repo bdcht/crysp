@@ -1,6 +1,6 @@
 class Substitution(object):
     def __init__(self,data=None):
-        self.key = ['-']*256
+        self.key = [b'-']*256
         self.data = data
     def setkey(self,c,v):
         self.key[ord(c)]=v
@@ -11,7 +11,7 @@ class Substitution(object):
             data = self.data
         if data is None:
             return
-        kstr=''.join(self.key)
+        kstr=b''.join(self.key)
         return data.translate(kstr)
 
 class Transposition(object):

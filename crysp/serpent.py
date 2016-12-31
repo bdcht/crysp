@@ -17,7 +17,7 @@ class Serpent(object):
         self.K.size = 256
         # key schelule:
         prekey = []
-        phi = Bits(0x9e3779b9L,32)
+        phi = Bits(0x9e3779b9,32)
         for p in range(0,256,32):
             prekey.append(self.K[p:p+32])
         for i in range(132):

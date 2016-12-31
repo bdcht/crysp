@@ -3,6 +3,7 @@
 # This code is part of crysp
 # Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
+from __future__ import print_function
 
 import matplotlib
 matplotlib.use('GTKCairo',warn=False)
@@ -15,14 +16,14 @@ def hist(files):
         try:
             f = open(fname)
         except:
-            print 'error opening file %s'%fname
+            print('error opening file %s'%fname)
             continue
-        print 'processing file %s ...'%fname,
+        print('processing file %s ...'%fname,end='')
         s = map(ord,f.read())
         N += len(s)
         for c in s:
             H[c] += 1
-        print 'done.'
+        print('done.')
     IC = 0
     for c in range(256):
         IC += H[c]*(H[c]-1)

@@ -1,9 +1,10 @@
 import pytest
 
 from crysp.blake import *
+import codecs
 
-m1 = '\0'
-m2 = "\0"*72
+m1 = b'\0'
+m2 = b"\0"*72
 vectors_blake256=[(m1,"0CE8D4EF4DD7CD8D62DFDED9D4EDB0A774AE6A41929A74DA23109E8F11139C87"),
                   (m2,"D419BAD32D504FB7D44D460C42C5593FE544FA4C135DEC31E21BD9ABDCC22D41"),
                  ]
@@ -19,24 +20,24 @@ vectors_blake384=[(m1   ,"10281F67E135E90AE8E882251A355510A719367AD70227B137343E
 
 @pytest.mark.parametrize('m,h',vectors_blake256)
 def test_blake256(m,h):
-    assert blake256(m).encode('hex')==h.lower()
+    assert blake256(m)==codecs.decode(h,'hex')
 @pytest.mark.parametrize('m,h',vectors_blake224)
 def test_blake224(m,h):
-    assert blake224(m).encode('hex')==h.lower()
+    assert blake224(m)==codecs.decode(h,'hex')
 @pytest.mark.parametrize('m,h',vectors_blake512)
 def test_blake512(m,h):
-    assert blake512(m).encode('hex')==h.lower()
+    assert blake512(m)==codecs.decode(h,'hex')
 @pytest.mark.parametrize('m,h',vectors_blake384)
 def test_blake384(m,h):
-    assert blake384(m).encode('hex')==h.lower()
+    assert blake384(m)==codecs.decode(h,'hex')
 
 
-vectors_blake2b=[('hello','e4cfa39a3d37be31c59609e807970799caa68a19bfaa15135f165085e01d41a65ba1e1b146aeb6bd0092b49eac214c103ccfa3a365954bbbe52f74a2b3620c94'),]
+vectors_blake2b=[(b'hello','e4cfa39a3d37be31c59609e807970799caa68a19bfaa15135f165085e01d41a65ba1e1b146aeb6bd0092b49eac214c103ccfa3a365954bbbe52f74a2b3620c94'),]
 @pytest.mark.parametrize('m,h',vectors_blake2b)
 def test_blake2b(m,h):
-    assert blake2b(m).encode('hex')==h
+    assert blake2b(m)==codecs.decode(h,'hex')
 
-vectors_blake2s=[('hello','19213bacc58dee6dbde3ceb9a47cbb330b3d86f8cca8997eb00be456f140ca25')]
+vectors_blake2s=[(b'hello','19213bacc58dee6dbde3ceb9a47cbb330b3d86f8cca8997eb00be456f140ca25')]
 @pytest.mark.parametrize('m,h',vectors_blake2s)
 def test_blake2b(m,h):
-    assert blake2s(m).encode('hex')==h
+    assert blake2s(m)==codecs.decode(h,'hex')

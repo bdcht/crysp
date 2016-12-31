@@ -1,5 +1,5 @@
 import pytest
-
+import codecs
 import struct
 from crysp.skein import *
 
@@ -44,7 +44,7 @@ vectors = [(256,256,
 @pytest.mark.parametrize('Nb,No,m,h',vectors)
 def test_skein_002(Nb,No,m,h):
     H = Skein(Nb,No)
-    m,h = (s.decode('hex') for s in (m,h))
+    m,h = (codecs.decode(s,'hex') for s in (m,h))
     assert H(m)==h
 
 # testing Skein hash function with non integral random input:
@@ -54,7 +54,7 @@ def test_skein_003():
     M='00'
     RESULT="52D2B5FFC2966C06BA7BB0CC2BABBC935E99146487FB361A239830D4D688C988"
     l=1
-    m,h = (s.decode('hex') for s in (M,RESULT))
+    m,h = (codecs.decode(s,'hex') for s in (M,RESULT))
     assert H(m,bitlen=l)==h
 
 def test_skein_004():
@@ -62,7 +62,7 @@ def test_skein_004():
     M='00'*33
     RESULT="3EAEA996FAD95B6032654D6CA93AC3450BED8C754CD8000460A2876E34E52FA7"
     l=257
-    m,h = (s.decode('hex') for s in (M,RESULT))
+    m,h = (codecs.decode(s,'hex') for s in (M,RESULT))
     assert H(m,bitlen=l)==h
 
 # testing Skein MAC function:
@@ -78,7 +78,7 @@ vectors = [(256,256,"CB41F1706CDE09651203C2D0EFBADDF8",
 
 @pytest.mark.parametrize('Nb,No,K,m,h',vectors)
 def test_skein_005(Nb,No,K,m,h):
-    K,m,h = (s.decode('hex') for s in (K,m,h))
+    K,m,h = (codecs.decode(s,'hex') for s in (K,m,h))
     H = Skein(Nb,No,key=K)
     assert H(m)==h
 
@@ -91,7 +91,7 @@ def test_skein_006():
       "400142014401460148014A014C014E01500152015401560158015A015C015E01"\
       "600162016401660168016A016C016E01700172017401760178017A017C01"
     RESULT="E3CF8FCDD20BFE85D175448007226C20FF22A65DC9DF7588BE305E5CCC3F4941"
-    m,h = (s.decode('hex') for s in (M,RESULT))
+    m,h = (codecs.decode(s,'hex') for s in (M,RESULT))
     assert H(m)==h
 
 

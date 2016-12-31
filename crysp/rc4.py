@@ -18,7 +18,7 @@ class RC4(object):
         self.ksa()
 
     def ksa(self):
-        S = Poly(range(256),8)
+        S = Poly(list(range(256)),8)
         j=0
         for i in range(256):
             j = (j+S.ival[i]+self.K.ival[i%self.K.dim])&0xff

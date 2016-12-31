@@ -4,8 +4,8 @@
 # Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
 
-from crysp.bits import Bits,pack
-from crysp.utils.operators import rol,ror
+from crysp.bits import *
+from crysp.utils.operators import *
 
 # Threefish block cipher primitive provides enc/dec methods
 # for encryption and decryption of one data block.
@@ -24,7 +24,7 @@ class Threefish(object):
         assert T.size==128
         self.T = T
         # get 64-bits words and rounds:
-        self.Nw = self.K.size/64
+        self.Nw = self.K.size//64
         self.Nr = 72 if self.Nw<16 else 80
         # set pi permutation and inverse:
         self.__pi={ 4: (0,3,2,1),
@@ -86,38 +86,38 @@ class Threefish(object):
         return [y0-x1,x1]
 
     def enc(self,M):
-        if isinstance(M,str): M=Bits(M,bitorder=1)
+        if isinstance(M,bytes): M=Bits(M,bitorder=1)
         assert M.size==self.K.size
         v = [M[i:i+64] for i in range(0,M.size,64)]
         for d in range(self.Nr):
             if d%4==0:
-                kd = self.__ks(d/4)
+                kd = self.__ks(d//4)
                 e = [ (v[i]+kd[i]) for i in range(self.Nw) ]
             else:
                 e = v
             f = []
             for j in range(0,self.Nw,2):
-                f.extend(self.__MIX(e[j],e[j+1],d,j/2))
+                f.extend(self.__MIX(e[j],e[j+1],d,j//2))
             for i in range(self.Nw):
                 v[i] = f[self.__pi[i]]
-        k = self.__ks(self.Nr/4)
+        k = self.__ks(self.Nr//4)
         c = [(v[i]+k[i]) for i in range(self.Nw)]
-        return ''.join(map(pack,c))
+        return b''.join([pack(x) for x in c])
 
     def dec(self,C):
-        if isinstance(C,str): C=Bits(C,bitorder=1)
+        if isinstance(C,bytes): C=Bits(C,bitorder=1)
         assert C.size==self.K.size
         c = [C[i:i+64] for i in range(0,C.size,64)]
-        k = self.__ks(self.Nr/4)
+        k = self.__ks(self.Nr//4)
         v = [(c[i]-k[i]) for i in range(self.Nw)]
         for d in reversed(range(self.Nr)):
             f = [ v[self.__piinv[i]] for i in range(self.Nw) ]
             e = []
             for j in range(0,self.Nw,2):
-                e.extend(self.__MIXinv(f[j],f[j+1],d,j/2))
+                e.extend(self.__MIXinv(f[j],f[j+1],d,j//2))
             if d%4==0:
-                kd = self.__ks(d/4)
+                kd = self.__ks(d//4)
                 v = [ (e[i]-kd[i]) for i in range(self.Nw) ]
             else:
                 v = e
-        return ''.join(map(pack,v))
+        return b''.join([pack(x) for x in v])

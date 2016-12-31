@@ -14,7 +14,7 @@ class TDEA(object):
             assert K2 is None
             assert K3 is None
             K1,K2,K3 = K1[:8],K1[8:],K1[16:]
-            if K3=='': K3=K1
+            if K3==b'': K3=K1
         if K2 is None:
             assert K3 is None
             K2 = K1
@@ -36,7 +36,7 @@ class DES(object):
     size = 64
 
     def __init__(self,K):
-        assert len(K)==self.size/8
+        assert len(K)==self.size//8
         self.K = Bits(K,self.size)
 
     def enc(self,M):
@@ -56,7 +56,7 @@ class DES(object):
         C = Bits(0,64)
         C[0:32] = L
         C[32:64] = R
-        return hex(IPinv(C))
+        return (IPinv(C)).bytes()
 
     def dec(self,C):
         assert len(C)==8
@@ -75,7 +75,7 @@ class DES(object):
         M = Bits(0,64)
         M[0:32] = L
         M[32:64] = R
-        return hex(IPinv(M))
+        return (IPinv(M)).bytes()
 
 # DES internals:
 #---------------

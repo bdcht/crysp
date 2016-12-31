@@ -7,15 +7,16 @@
 from crysp.poly import *
 from crysp.utils.operators import *
 
+rM    = [0,1,2,3,5,6,7,4,10,11,8,9,15,12,13,14]
+rMinv = [rM.index(x) for x in range(16)]
+
+cM    = [0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15]
+cMinv = [cM.index(x) for x in range(16)]
+
+sigma = [Bits(x,bitorder=1) for x in [b'expa', b'nd 3', b'2-by', b'te k']]
+tau   = [Bits(x,bitorder=1) for x in [b'expa', b'nd 1', b'6-by', b'te k']]
+
 class Salsa20(object):
-    rM    = [0,1,2,3,5,6,7,4,10,11,8,9,15,12,13,14]
-    rMinv = [rM.index(x) for x in range(16)]
-
-    cM    = [0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15]
-    cMinv = [cM.index(x) for x in range(16)]
-
-    sigma = [Bits(x,bitorder=1) for x in ['expa', 'nd 3', '2-by', 'te k']]
-    tau   = [Bits(x,bitorder=1) for x in ['expa', 'nd 1', '6-by', 'te k']]
 
     def __init__(self,K=None,rounds=20):
         self.K = K
@@ -23,10 +24,10 @@ class Salsa20(object):
         if K is not None:
             assert isinstance(K,Bits) and K.size in (128,256)
             self.K = K.split(128)
-            consts = self.sigma
+            consts = sigma
             if len(self.K)==1:
                 self.K.append(self.K[0])
-                consts = self.tau
+                consts = tau
             self.p[0,5,10,15] = consts
             self.p[1:5] = self.K[0].split(32)
             self.p[11:15] = self.K[1].split(32)
@@ -36,16 +37,16 @@ class Salsa20(object):
     def hash(self,m):
         L = Bits(m,bitorder=1).split(32)
         X = Poly([x.int() for x in L],size=32)
-        return ''.join([pack(z) for z in self.core(X)])
+        return b''.join([pack(z) for z in self.core(X)])
 
     def keystream(self,v):
         assert self.K is not None
         assert isinstance(v,Bits) and v.size==64
         self.p[6:8] = v.split(32)
-        maxlen = 1L<<64
-        i = 0L
+        maxlen = 1<<64
+        i = 0
         while i<maxlen:
-            self.p[8:10] = (i&0xffffffffL,i>>32)
+            self.p[8:10] = (i&0xffffffff,i>>32)
             yield self.core(self.p,dround=self.dround)
             i += 1
 
@@ -58,9 +59,9 @@ class Salsa20(object):
             x = x.split(8)
             x.dim = len(b)
             c = x^Poly(b)
-            C.append(''.join([chr(x) for x in c.ival]))
+            C.append(newbytes(c.ival))
             p += 64
-        return ''.join(C)
+        return b''.join(C)
 
     def dec(self,v,c):
         return self.enc(v,c)
@@ -73,12 +74,12 @@ class Salsa20(object):
         return concat([z0,z1,z2,z3])
 
     def rowround(self,y):
-        yM = y[self.rM]
+        yM = y[rM]
         z = concat([self.quarterround(yM[i:i+4]) for i in range(0,16,4)])
-        return z[self.rMinv]
+        return z[rMinv]
 
     def columnround(self,x):
-        return self.rowround(x[self.cM])[self.cMinv]
+        return self.rowround(x[cM])[cMinv]
 
     def doubleround(self,x):
         return self.rowround(self.columnround(x))

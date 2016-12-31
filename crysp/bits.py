@@ -3,20 +3,27 @@
 # published under GPLv2 license
 
 import struct
+import codecs
+from builtins import bytes as newbytes
+
+try:
+    IntType = (int,long)
+except NameError:
+    IntType = (int,)
 
 # reverse all bits in a byte:
 def reverse_byte(b):
-    return (b * 0x0202020202L & 0x010884422010L) % 1023
+    return (b * 0x0202020202 & 0x010884422010) % 1023
 
 # write obj in little-endian format by default (<L).
 # use '>L' for big-endian format.
 def pack(obj,fmt='<L'):
     assert fmt in ['<L','>L']
-    s = (chr(x.ival&0xff) for x in obj.split(8))
-    if fmt=='>L': s = reversed(list(s))
-    return ''.join(s)
+    s = [x.ival&0xff for x in obj.split(8)]
+    if fmt=='>L': s.reverse()
+    return newbytes(s)
 
-# generalize struct.unpack to return one long value of
+# generalize struct.unpack to return one int value of
 # arbitrary bit length.
 def unpack(istr,bigend=False):
     r = len(istr)
@@ -48,7 +55,7 @@ hextab_r = ('0000','1000','0100','1100',
 # mask: automatically adjusted to size, but can be redefined if needed.
 #
 # Bits instance can be initialised from:
-#  - int/long values: bits are ordered from LSB to MSB.
+#  - int values: bits are ordered from LSB to MSB.
 #  - list (of bits) : bits are ordered as listed.
 #  - strings        : by default, bit0 is MSB of 1st byte! (stream mode)
 #                     This means that Bits('\x80',5) is the sequence
@@ -62,7 +69,7 @@ hextab_r = ('0000','1000','0100','1100',
 #  - human-readable dot alternative : Bits('\x80',5).todots() =>  '|.    |'
 #  - the bit sequence as a list: Bits('\x80',5).bitlist() = [1,0,0,0,0]
 #  - integer : using internal ival field is not recommended, use Bits.int()
-#  - raw bitstream as a bytestring: hex(Bits('\x82',5) => '\x80'.
+#  - raw bitstream as a bytestring: Bits('\x82',5).bytes() => '\x80'.
 #    (note that if size is not a multiple of 8, the bitstream is naturally
 #     extended with 0 bit padding). Again, bit0 is MSB of 1st byte.
 #  - raw little-endian "packed" bytestring: the struct.pack extension
@@ -72,13 +79,13 @@ class Bits(object):
   __slots__ = ['ival','__sz','mask']
 
   def __init__(self,v,size=None,bitorder=-1):
-    self.ival = self.__sz = self.mask = 0L
+    self.ival = self.__sz = self.mask = 0
     if isinstance(v,Bits):
       self.ival = v.ival
       self.__sz = v.size
       self.mask = v.mask
-    elif isinstance(v,int) or isinstance(v,long):
-      self.ival = abs(v*1L)
+    elif isinstance(v,IntType):
+      self.ival = abs(v*int(1))
       if self.ival>0 and (size is None):
         self.size = self.ival.bit_length()
     elif isinstance(v,list):
@@ -86,18 +93,21 @@ class Bits(object):
       self.ival = 0
       for x in reversed(v):
         self.ival = (self.ival<<1)|(x&1)
-    elif isinstance(v,str):
+    elif isinstance(v,bytes):
       self.load(v,bitorder)
+    else:
+        raise TypeError(v)
     if size!=None: self.size = size
 
-  def load(self,bytestr,bitorder=-1):
+  def load(self,v,bitorder=-1):
+    bytestr = newbytes(v)
     self.size = len(bytestr)*8
-    f = ord
     if bitorder==-1:
-      f = lambda c: reverse_byte(ord(c))
+      l = [reverse_byte(c) for c in bytestr]
+    else:
+      l = bytestr
     v = 0
-    l = reversed([f(c) for c in bytestr])
-    for o in l:
+    for o in reversed(l):
       v = (v<<8) | o
     self.ival = v
 
@@ -106,9 +116,9 @@ class Bits(object):
 
   def bit(self,i):
     if 0 <= i < self.__sz:
-      return (self.ival>>i)&0x1L
+      return (self.ival>>i)&0x1
     elif 0<= -i <= self.__sz:
-      return (self.ival>>(self.__sz+i))&0x1L
+      return (self.ival>>(self.__sz+i))&0x1
     else:
       raise IndexError
 
@@ -130,7 +140,7 @@ class Bits(object):
   @size.setter
   def size(self,v):
     self.__sz = v
-    self.mask = (1L<<v)-1L
+    self.mask = (1<<v)-1
     self.ival &= self.mask
 
   def __repr__(self):
@@ -141,21 +151,27 @@ class Bits(object):
 
   # binary string representation, bit0 1st.
   def __str__(self):
-    xval = ("%x"%(self.ival&self.mask)).zfill(self.__sz/4+1)
+    xval = ("%x"%(self.ival&self.mask)).zfill(self.__sz//4+1)
     s = [hextab_r[int(x,16)] for x in xval]
     s.reverse()
-    return ''.join(s)[:self.__sz]
+    return u''.join(s)[:self.__sz]
 
   # byte string representation, bit0 1st (crypto notation).
-  def __hex__(self):
+  def __bytes__(self):
     v = self.ival&self.mask
     i = 0
     s = []
     while i<self.__sz:
-      s.append(chr(reverse_byte(v&0xff)))
+      s.append(reverse_byte(v&0xff))
       v = v>>8
       i += 8
-    return ''.join(s)
+    return newbytes(s)
+
+  def bytes(self):
+    return self.__bytes__()
+
+  def hex(self):
+    return codecs.encode(self.__bytes__(),'hex')
 
   def split(self,subsize,bigend=False):
     l = []
@@ -167,7 +183,7 @@ class Bits(object):
     return l
 
   def todots(self):
-    return '|%s|'%str(self).replace('0',' ').replace('1','.')
+    return u'|%s|'%str(self).replace('0',' ').replace('1','.')
 
 # Basic comparison method ('is' operator), falls back to integer comparison.
 #------------------------------------------------------------------------------
@@ -176,7 +192,7 @@ class Bits(object):
     if self.size != a.size: raise ValueError
     return cmp(self.ival,a.ival)
 
-# Enhanced comparison methods ('==' and '<>' operators).
+# Enhanced comparison methods ('==' and '!=' operators).
 #------------------------------------------------------------------------------
   def __eq__(self,a):
     if isinstance(a,Bits): a=a.ival
@@ -184,7 +200,7 @@ class Bits(object):
 #------------------------------------------------------------------------------
   def __ne__(self,a):
     if isinstance(a,Bits): a=a.ival
-    return (self.ival<>a)
+    return (self.ival!=a)
 
 # Iterator for the class. Enables 'for b in self' expressions.
 #------------------------------------------------------------------------------
@@ -193,15 +209,15 @@ class Bits(object):
       yield self.bit(x)
 
 # getitem operator defines b[i], b[i:j] and b[list] which returns the requested
-# bit values as a long (0L,1L) or a list of such longs.
+# bit values as a int (0,1) or a list of such ints.
 #------------------------------------------------------------------------------
   def __getitem__(self,i):
-    if isinstance(i,int):
+    if isinstance(i,IntType):
       return Bits(self.bit(i),1)
     elif isinstance(i,slice):
       start,stop,step = i.indices(self.__sz)
       if step==1 and stop>=start:
-        v = (self.ival&((1L<<stop)-1))>>start
+        v = (self.ival&((1<<stop)-1))>>start
         return Bits(v,stop-start)
       else:
         return self[range(self.__sz)[i]]
@@ -212,22 +228,22 @@ class Bits(object):
       return Bits(v,len(i))
 
 # setitem operator defines b[i], b[i:j] and b[list] which allow to affect new
-# values to these bits, from another object, int/long value or a bit list.
+# values to these bits, from another object, int value or a bit list.
 #------------------------------------------------------------------------------
   def __setitem__(self,i,v):
-    if isinstance(i,int):
+    if isinstance(i,IntType):
       assert v in (0,1)
       if   0<= i< self.__sz   : p=i
       elif 0<=-i<(self.__sz+1): p=self.__sz+i
       else: raise IndexError
-      if v==0: self.ival &= (self.mask^((0x1L)<<p))
-      if v==1: self.ival |= (0x1L)<<p
+      if v==0: self.ival &= (self.mask^((0x1)<<p))
+      if v==1: self.ival |= (0x1)<<p
     else:
       v = Bits(v)
       if isinstance(i,slice):
         start,stop,step = i.indices(self.__sz)
         if step==1 and stop>start:
-            mask = self.mask^((1L<<stop)-1)^((1L<<start)-1)
+            mask = self.mask^((1<<stop)-1)^((1<<start)-1)
             self.ival = (self.ival&mask)|(v.ival<<start)
             return
         r = range(start,stop,step)
@@ -350,7 +366,7 @@ class Bits(object):
     return Bits(self.ival | obj.ival<<self.size, size)
 
   def bitlist(self,dir=1):
-    l = map(int,str(self))
+    l = list(self)
     if dir==-1: l.reverse()
     return l
 
