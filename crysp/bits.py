@@ -202,6 +202,10 @@ class Bits(object):
     if isinstance(a,Bits): a=a.ival
     return (self.ival!=a)
 
+#------------------------------------------------------------------------------
+  def __neg__(self):
+    return Bits((-self.ival) % self.mask, self.size)
+
 # Iterator for the class. Enables 'for b in self' expressions.
 #------------------------------------------------------------------------------
   def __iter__(self):

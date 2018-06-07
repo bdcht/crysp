@@ -178,7 +178,7 @@ class MD6(object):
             W[25:41] = C
             W[41:89] = B[i]
             C = self.f(W)
-        h = concat([c for c in C[::-1]])
+        h = concat(list(C)[::-1])
         h.size = self.size
         return pack(h,'>L')
 
