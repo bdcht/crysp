@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 # This code is part of crysp
 # Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
@@ -41,7 +42,7 @@ def histplot(H,IC,title='',color=None,edgecolor=None):
     ax = pyplot.gca()
     ax.set_xlim(0,256)
     ax.set_xticks((10,32,49,65,97,231))
-    labels = ax.set_xticklabels(('10:\\n','32:sp','49:num','65:A-Z','97:a-z','231:çéèêë'))
+    labels = ax.set_xticklabels(('10:\\n','32:sp','49:num','65:A-Z',u'97:a-z',u'231:çéèêë'))
 
 if __name__=='__main__':
     import sys
