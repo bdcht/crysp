@@ -1,5 +1,5 @@
 import pytest
-
+import codecs
 from crysp.aes import *
 
 aes_vectors = [('2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c' ,
@@ -17,7 +17,7 @@ def test_aes_gmul():
     assert gmul(0,3) == 0
 
 def test_aes_keyschedule():
-    k,m,c = (s.replace(' ','').decode('hex') for s in aes_vectors[0])
+    k,m,c = (codecs.decode(s.replace(' ',''),'hex') for s in aes_vectors[0])
     E = AES(k)
     assert E.Nb==4
     assert E.Nk==4
@@ -31,7 +31,7 @@ def test_aes_keyschedule():
 
 @pytest.mark.parametrize('k,m,c',aes_vectors)
 def test_aes_vectors(k,m,c):
-    k,m,c = (s.replace(' ','').decode('hex') for s in (k,m,c))
+    k,m,c = (codecs.decode(s.replace(' ',''),'hex') for s in (k,m,c))
     E = AES(k)
     assert E.enc(m) == c
     assert E.dec(c) == m

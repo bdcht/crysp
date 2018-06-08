@@ -107,7 +107,7 @@ class AES(object):
         while i<(self.Nb*(self.Nr+1)):
             tmp = w[i-1]
             if (i%self.Nk)==0:
-                tmp = self.sboxtable[rotw(tmp)]^Poly(Rcon[i/self.Nk],8,4)
+                tmp = self.sboxtable[rotw(tmp)]^Poly(Rcon[i//self.Nk],8,4)
             elif self.Nk>6 and (i%self.Nk)==4:
                 tmp = self.sboxtable[tmp.ival]
             w.append(w[i-self.Nk]^tmp)
