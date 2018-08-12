@@ -6,4 +6,5 @@ dist/
 TODO
 *.egg-info/
 tests/vectors/
+.pytest_cache/
 tests/.pytest_cache/
