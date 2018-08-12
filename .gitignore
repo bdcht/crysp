@@ -1,8 +1,9 @@
 *.pyc
 build/
-.tox/
+dist/
 .cache/
+.eggs/
 TODO
 *.egg-info/
 tests/vectors/
-dist/
+tests/.pytest_cache/

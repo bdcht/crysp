@@ -18,6 +18,8 @@ setup(
     ],
     keywords='cryptography development',
     packages=find_packages(),
+    setup_requires=['pytest-runner',],
+    tests_require=['pytest',],
     install_requires=[],
     extras_require={
       'test': ['pytest'],
