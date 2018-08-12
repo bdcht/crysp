@@ -20,7 +20,7 @@ setup(
     packages=find_packages(),
     setup_requires=['pytest-runner',],
     tests_require=['pytest',],
-    install_requires=[],
+    install_requires=['future'],
     extras_require={
       'test': ['pytest'],
       'full': ['matplotlib','grandalf'],
