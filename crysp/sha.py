@@ -6,13 +6,12 @@
 
 from crysp.bits import *
 from crysp.utils.operators import rol,ror
-
+from crysp.keccak import Keccak
 from crysp.padding import SHApadding
 
 Ch     = lambda x,y,z: z^(x&(y^z))
 Parity = lambda x,y,z: x^y^z
 Maj    = lambda x,y,z: (x&y)|(x&z)|(y&z)
-
 
 class SHA1(object):
     def __init__(self,version=1):
@@ -203,3 +202,35 @@ class SHA2(SHA1):
             self.H[7] += h
         X = b''.join([pack(h,'>L') for h in self.H])
         return X[:self.outlen]
+
+class SHA3(Keccak):
+    def __init__(self,size):
+        if size==224:
+            Keccak.__init__(self,b=1600,c=448,len=size)
+        elif size==256:
+            Keccak.__init__(self,b=1600,c=512,len=size)
+        elif size==384:
+            Keccak.__init__(self,b=1600,c=768,len=size)
+        elif size==512:
+            Keccak.__init__(self,b=1600,c=1024,len=size)
+        else:
+            raise ValueError(size)
+        self.duplexing=True
+
+    def __call__(self,M):
+        L = len(M)*8
+        return Keccak.__call__(self,M+'\x02',bitlen=L+2)
+
+def SHAKE128(M,d):
+    h = Keccak(b=1600,c=256,len=d)
+    h.duplexing=True
+    L = len(M)*8
+    M += '\x0f'
+    return h(M,bitlen=L+4)
+
+def SHAKE256(M,d):
+    h = Keccak(b=1600,c=512,len=d)
+    h.duplexing=True
+    L = len(M)*8
+    M += '\x0f'
+    return h(M,bitlen=L+4)

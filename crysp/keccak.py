@@ -225,8 +225,8 @@ def rot(l,n):
     return (l<<sl)|(l>>sr)
 
 
-sha3_224 = Keccak(b=1600,c=448,len=224)
-sha3_256 = Keccak(b=1600,c=512,len=256)
-sha3_384 = Keccak(b=1600,c=768,len=384)
-sha3_512 = Keccak(b=1600,c=1024,len=512)
+keccak_224 = Keccak(b=1600,c=448,len=224)
+keccak_256 = Keccak(b=1600,c=512,len=256)
+keccak_384 = Keccak(b=1600,c=768,len=384)
+keccak_512 = Keccak(b=1600,c=1024,len=512)
 
