@@ -219,18 +219,18 @@ class SHA3(Keccak):
 
     def __call__(self,M):
         L = len(M)*8
-        return Keccak.__call__(self,M+'\x02',bitlen=L+2)
+        return Keccak.__call__(self,M+b'\x02',bitlen=L+2)
 
 def SHAKE128(M,d):
     h = Keccak(b=1600,c=256,len=d)
     h.duplexing=True
     L = len(M)*8
-    M += '\x0f'
+    M += b'\x0f'
     return h(M,bitlen=L+4)
 
 def SHAKE256(M,d):
     h = Keccak(b=1600,c=512,len=d)
     h.duplexing=True
     L = len(M)*8
-    M += '\x0f'
+    M += b'\x0f'
     return h(M,bitlen=L+4)
