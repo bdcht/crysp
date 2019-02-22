@@ -151,7 +151,7 @@ class TLSH(object):
             yield (71,data[-1],data[-6],data[-8])
             yield (73,data[-1],data[-7],data[-8])
         except IndexError:
-                raise StopIteration
+                return
 
     def b_mapping(self,c):
         return reduce(lambda x,y:PEARSON_T[x^y],c,0)
