@@ -8,12 +8,15 @@ Crypto Stuff in Python
 .. image:: https://travis-ci.org/bdcht/crysp.svg?branch=master
     :target: https://travis-ci.org/bdcht/crysp
 
+.. image:: https://badge.fury.io/py/crysp.svg
+    :target: https://badge.fury.io/py/crysp
+
 +-----------+-----------------------------------+
 | Status:   | Under Development                 |
 +-----------+-----------------------------------+
 | Location: | https://github.com/bdcht/crysp    |
 +-----------+-----------------------------------+
-| Version:  | 0.9                               |
+| Version:  | 1.0                               |
 +-----------+-----------------------------------+
 
 Description
