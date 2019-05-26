@@ -89,36 +89,6 @@ class CTS_ECB(Mode):
         return b''.join(M)
 
 # -----------------------------------------------------------------------------
-# Electronic Code Book with Cypher Text Stealing (nopadding)
-class CTS_ECB(Mode):
-    def __init__(self,cipher,pad=nopadding):
-        Mode.__init__(self,cipher,pad)
-    # encryption mode
-    def enc(self,M):
-        n,p = divmod(len(M),self.len)
-        C = []
-        for b in self.iterblocks(M[:n*self.len]):
-            C.append(self._cipher.enc(b))
-        if p>0:
-            clast = C.pop()
-            b = self.iterblocks(M[n*self.len:])[0]
-            C.append(self._cipher.enc(b+clast[p:]))
-            C.append(clast[0:p])
-        return ''.join(C)
-    # decryption mode
-    def dec(self,C):
-        n,p = divmod(len(C),self.len)
-        P = StringIO.StringIO(C)
-        M = []
-        for b in range(n):
-            M.append(self._cipher.dec(P.read(self.len)))
-        if p>0:
-            mlast = M.pop()
-            M.append(self._cipher.dec(P.read(p)+mast[p:]))
-            M.append(mlast[:p])
-        return ''.join(M)
-
-# -----------------------------------------------------------------------------
 # Cipher Block Chaining, default padding is pkcs7
 class CBC(Mode):
     def __init__(self,cipher,IV,pad=pkcs7):
@@ -185,48 +155,6 @@ class CTS_CBC(Mode):
             C = C[:-l]
             M.insert(0,self.xorstr(C[-l:],self._cipher.dec(c)))
         return b''.join(M)
-
-# -----------------------------------------------------------------------------
-# Cipher Block Chaining with Cipher Text Stealing (nopadding)
-class CTS_CBC(Mode):
-    def __init__(self,cipher,IV,pad=nopadding):
-        Mode.__init__(self,cipher,pad)
-        assert len(IV)==self.len
-        self.IV = IV
-    # encryption mode
-    def enc(self,M):
-        n,p = divmod(len(M),self.len)
-        C = [self.IV]
-        for b in self.iterblocks(M[:n*self.len]):
-            x = self.xorstr(b,C[-1])
-            C.append(self._cipher.enc(x))
-        if p>0:
-            clast = C.pop()
-            b = self.iterblocks(M[n*self.len:]).ljust(self.len,'\0')
-            x = self.xorstr(b,clast)
-            C.append(self._cipher.enc(x))
-            C.append(clast[:p])
-        return ''.join(C)
-    # decryption mode
-    def dec(self,C):
-        l = self.len
-        n,p = divmod(len(C),l)
-        M = []
-        if p>0:
-            clast = C[-p:]
-            C = C[:-p]
-            cend = C[-l:]
-            C = C[:-l]
-            mend = self._cipher.dec(cend)
-            mprev = self._cipher.dec(clast+mend[p:])
-            M.insert(0,self.xorstr(clast,mend[:p]))
-            M.insert(0,self.xorstr(C[-l:],mprev))
-        C = self.IV+C
-        while len(C)>l:
-            c = C[-l:]
-            C = C[:-l]
-            M.insert(0,self.xorstr(C[-l:],self._cipher.dec(c)))
-        return ''.join(M)
 
 # -----------------------------------------------------------------------------
 # Counter mode with provided iterable counter (no padding)
