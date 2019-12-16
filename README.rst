@@ -23,6 +23,10 @@ Description
 ===========
 
 crysp is a python package with some of my crypto-related facilities.
+It is obviously not intended to be used in "real" applications but
+more for studying purpose, allowing to inspect the internal state
+of various cryptographic algorithm and to easily modify parts of
+these algorithm.
 
 Install
 =======
