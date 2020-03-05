@@ -16,13 +16,13 @@ Crypto Stuff in Python
 +-----------+-----------------------------------+
 | Location: | https://github.com/bdcht/crysp    |
 +-----------+-----------------------------------+
-| Version:  | 1.0                               |
+| Version:  | 1.1                               |
 +-----------+-----------------------------------+
 
 Description
 ===========
 
-crysp is a python package with some of my crypto-related facilities.
+crysp is a python (>=3.5) package with some of my crypto-related facilities.
 It is obviously not intended to be used in "real" applications but
 more for studying purpose, allowing to inspect the internal state
 of various cryptographic algorithm and to easily modify parts of

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='crysp',
-    version='1.0',
+    version='1.1',
     description='Crypto Stuff in Python',
     long_description='some of my crypto-related facilities...',
     url='https://github.com/bdcht/crysp',
@@ -13,14 +13,13 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
     ],
     keywords='cryptography development',
     packages=find_packages(),
     setup_requires=['pytest-runner',],
     tests_require=['pytest',],
-    install_requires=['future'],
+    install_requires=[],
     extras_require={
       'test': ['pytest'],
       'full': ['matplotlib','grandalf'],

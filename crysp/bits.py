@@ -4,12 +4,8 @@
 
 import struct
 import codecs
-from builtins import bytes as newbytes
 
-try:
-    IntType = (int,long)
-except NameError:
-    IntType = (int,)
+__all__ = ['struct','Bits','reverse_byte','pack','unpack']
 
 # reverse all bits in a byte:
 def reverse_byte(b):
@@ -21,7 +17,7 @@ def pack(obj,fmt='<L'):
     assert fmt in ['<L','>L']
     s = [x.ival&0xff for x in obj.split(8)]
     if fmt=='>L': s.reverse()
-    return newbytes(s)
+    return bytes(s)
 
 # generalize struct.unpack to return one int value of
 # arbitrary bit length.
@@ -84,7 +80,7 @@ class Bits(object):
       self.ival = v.ival
       self.__sz = v.size
       self.mask = v.mask
-    elif isinstance(v,IntType):
+    elif isinstance(v,int):
       self.ival = abs(v*int(1))
       if self.ival>0 and (size is None):
         self.size = self.ival.bit_length()
@@ -100,7 +96,7 @@ class Bits(object):
     if size!=None: self.size = size
 
   def load(self,v,bitorder=-1):
-    bytestr = newbytes(v)
+    bytestr = bytes(v)
     self.size = len(bytestr)*8
     if bitorder==-1:
       l = [reverse_byte(c) for c in bytestr]
@@ -165,7 +161,7 @@ class Bits(object):
       s.append(reverse_byte(v&0xff))
       v = v>>8
       i += 8
-    return newbytes(s)
+    return bytes(s)
 
   def bytes(self):
     return self.__bytes__()
@@ -216,7 +212,7 @@ class Bits(object):
 # bit values as a int (0,1) or a list of such ints.
 #------------------------------------------------------------------------------
   def __getitem__(self,i):
-    if isinstance(i,IntType):
+    if isinstance(i,int):
       return Bits(self.bit(i),1)
     elif isinstance(i,slice):
       start,stop,step = i.indices(self.__sz)
@@ -235,7 +231,7 @@ class Bits(object):
 # values to these bits, from another object, int value or a bit list.
 #------------------------------------------------------------------------------
   def __setitem__(self,i,v):
-    if isinstance(i,IntType):
+    if isinstance(i,int):
       assert v in (0,1)
       if   0<= i< self.__sz   : p=i
       elif 0<=-i<(self.__sz+1): p=self.__sz+i

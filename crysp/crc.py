@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from __future__ import print_function
 
 # This code is part of crysp
 # Copyright (C) 2009 Axel Tillequin (bdcht3@gmail.com) 
@@ -45,7 +44,7 @@ def crc(data,table,Xinit=0,Xfinal=None):
     print("crc: bytes input required")
     return None
   r = Bits(Xinit,table[0].size)
-  for b in newbytes(data):
+  for b in bytes(data):
     p = table[(r.ival^b)&0xff]
     r = (r>>8)^p
   if Xfinal:
@@ -56,7 +55,7 @@ def crc_back_pos(data,pos,table,Xfinal,c):
   if not isinstance(data,bytes):
     print("crc: bytes input required")
     return None
-  data = newbytes(data)
+  data = bytes(data)
   if not (0<=pos<len(data)):
     print("crc_back: pos error")
     return None

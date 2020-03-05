@@ -4,7 +4,6 @@
 # This code is part of crysp
 # Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
-from __future__ import print_function
 
 import matplotlib
 matplotlib.use('GTKCairo',warn=False)

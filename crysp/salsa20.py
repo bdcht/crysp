@@ -59,7 +59,7 @@ class Salsa20(object):
             x = x.split(8)
             x.dim = len(b)
             c = x^Poly(b)
-            C.append(newbytes(c.ival))
+            C.append(bytes(c.ival))
             p += 64
         return b''.join(C)
 

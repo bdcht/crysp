@@ -34,7 +34,7 @@ class SubPoly(object):
           self.ival = [int(x)&mask for x in v]
       elif isinstance(v,bytes):
           mask = 0xff
-          self.ival = list(newbytes(v))
+          self.ival = list(bytes(v))
       else:
           raise TypeError
       self.mask = mask

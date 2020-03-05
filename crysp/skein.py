@@ -28,7 +28,7 @@ class Skein(object):
         self.Yl = Yl
         self.Yf = Yf
         self.Ym = Ym
-        self.C += newbytes([Yl,Yf,Ym])+b'\0'*13
+        self.C += bytes([Yl,Yf,Ym])+b'\0'*13
         self.key = key
         self.prs = prs
         self.PK  = PK

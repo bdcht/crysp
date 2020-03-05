@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import print_function
+
 # This code is part of crysp
 # Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
@@ -29,7 +29,7 @@ def hist(files):
                 except KeyError:
                     W[w] = 1
         print('done.')
-    for v in W.itervalues():
+    for v in iter(W.values()):
         v = v*1./N
     return W
 

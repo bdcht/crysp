@@ -101,7 +101,7 @@ class Keccak(object):
             needed = bitlen
             if not self.duplexing:
                 b = Bits(M[-1:],size=needed%8)[::-1]
-                M = M[:needed//8]+newbytes([b.ival])
+                M = M[:needed//8]+bytes([b.ival])
         r = self.r
         br,rr = divmod(r,8)
         P = BytesIO(M)

@@ -87,7 +87,7 @@ def test_chacha_002():
 # -------------------------------------------------------------------
 
 def tobits(s):
-    x = newbytes([int(x,16) for x in s.split()])
+    x = bytes([int(x,16) for x in s.split()])
     return Bits(x,bitorder=1)
 
 def test_chacha_003():

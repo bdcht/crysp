@@ -15,14 +15,14 @@ class HMAC(object):
         sz = self.h.blocksize//8
         if   len(k)>sz: k = self.h(k)
         elif len(k)<sz: k +=b'\0'*(sz-len(k))
-        self.K = newbytes(k)
+        self.K = bytes(k)
 
     def __call__(self,m):
         assert self.K
         a = self.K
-        b = newbytes(b'\x5c'*(self.h.blocksize//8))
-        opad = newbytes([x^y for (x,y) in zip(a,b)])
-        b = newbytes(b'\x36'*(self.h.blocksize//8))
-        ipad = newbytes([x^y for (x,y) in zip(a,b)])
-        h1 = self.h(ipad+newbytes(m))
+        b = bytes(b'\x5c'*(self.h.blocksize//8))
+        opad = bytes([x^y for (x,y) in zip(a,b)])
+        b = bytes(b'\x36'*(self.h.blocksize//8))
+        ipad = bytes([x^y for (x,y) in zip(a,b)])
+        h1 = self.h(ipad+bytes(m))
         return self.h(opad+h1)

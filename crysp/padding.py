@@ -6,7 +6,6 @@
 
 from crysp.bits import *
 from io import BytesIO
-from builtins import bytes as newbytes
 
 class PaddingError(Exception):
     def __init__(self,value):
@@ -128,11 +127,11 @@ class pkcs7(blockiterator):
         q = (self.blocklen-p) or self.blocklen
         if q==0: q=self.blocklen
         self.padcnt = q*8
-        return m+(newbytes([q])*q)
+        return m+(bytes([q])*q)
     # remove padding:
     def remove(self,c):
         q = c[-1]
-        if q>self.blocklen or (c[-q:]!=newbytes([q])*q):
+        if q>self.blocklen or (c[-q:]!=bytes([q])*q):
             raise PaddingError(c)
         else:
             return c[:-q]
@@ -146,7 +145,7 @@ class X923(blockiterator):
         p = len(m)
         q = (self.blocklen-p) or self.blocklen
         r = m+(b'\0'*(q-1))
-        r += newbytes([q])
+        r += bytes([q])
         self.padflag = True
         self.bitcnt += p*8
         self.padcnt  = q*8

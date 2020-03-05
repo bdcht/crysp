@@ -2,7 +2,6 @@
 # This code is part of crysp
 # Copyright (C) 2009-2014 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
-from __future__ import print_function
 
 import matplotlib
 matplotlib.use('GTKCairo',warn=False)
@@ -28,7 +27,7 @@ def hist(files):
                 H['%c%c'%(s[i],s[i+1])] = 1
         print('done.')
     IC = 0
-    for k in H.iterkeys():
+    for k in iter(H.keys()):
         IC += H[k]*(H[k]-1)
         H[k] = (1.0*H[k])/N
     IC = IC/(N*(N-1.0))
@@ -38,7 +37,7 @@ def histplot(H,IC,thres=0.005,title='',color=None,edgecolor=None):
     if not color: color='red'
     if not edgecolor: edgecolor='yellow'
     ex=[]
-    for k,v in H.iteritems():
+    for k,v in iter(H.items()):
         if v>thres: ex.append(k)
     pyplot.bar(left=range(len(ex)),height=[H[t] for t in ex],color=color,edgecolor=edgecolor)
     pyplot.title('%s 2-symbols histogram (IC=%f, thres=%f)'%(title,IC,thres))
