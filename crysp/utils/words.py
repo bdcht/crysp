@@ -29,8 +29,8 @@ def hist(files):
                 except KeyError:
                     W[w] = 1
         print('done.')
-    for v in iter(W.values()):
-        v = v*1./N
+    for k,v in iter(W.items()):
+        W[k] = v*1./N
     return W
 
 def histplot(W,title='',color=None,edgecolor=None):
@@ -43,7 +43,7 @@ def histplot(W,title='',color=None,edgecolor=None):
     pyplot.ylabel('%')
     ax = pyplot.gca()
     ax.set_xlim(0,n)
-    labels = ax.set_xticklabels(K)
+    ax.set_xticklabels(K)
 
 if __name__=='__main__':
     import sys

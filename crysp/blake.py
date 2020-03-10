@@ -158,7 +158,10 @@ class Blake2(Blake):
 
     def iterblocks(self,M,padding=False):
         g = self.padmethod.iterblocks(M,padding=padding)
-        blk = next(g)
+        try:
+            blk = next(g)
+        except StopIteration:
+            blk = None
         while (blk):
             try: #forsee last block:
                 nextblk = next(g)

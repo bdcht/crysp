@@ -1,6 +1,8 @@
 import pytest
 import codecs
-from crysp.wb import *
+from crysp.bits import Bits
+from crysp.des import TDEA,DES
+from crysp.wb import table_rKT,table_M1,table_M2,table_M3,WhiteDES
 from crysp.mode import ECB,CBC
 
 def test_des_wb():

@@ -17,20 +17,14 @@ rMinv = [rM.index(x) for x in range(16)]
 class Chacha(salsa20.Salsa20):
 
     def __init__(self,K=None,rounds=8):
-        self.K = K
-        self.p = Poly(0,size=32,dim=16)
+        super().__init__(K,rounds)
+        # modified init from Salsa20 to Chacha:
         if K is not None:
-            assert isinstance(K,Bits) and K.size in (128,256)
-            self.K = K.split(128)
-            consts = salsa20.sigma
-            if len(self.K)==1:
-                self.K.append(self.K[0])
-                consts = salsa20.tau
+            consts = self.p[0,5,10,15]
+            self.p = Poly(0,size=32,dim=16)
             self.p[0:4] = consts
             self.p[4:8] = self.K[0].split(32)
             self.p[8:12] = self.K[1].split(32)
-        assert rounds>0 and rounds&1==0
-        self.dround = rounds>>1
 
     def keystream(self,v):
         assert self.K is not None

@@ -128,7 +128,7 @@ class Keccak(object):
         self.duplexing = True
         L = [x for x in self.iterblocks(m,bitlen)]
         assert len(L)==1
-        if outlen==None: outlen=self.r
+        if outlen is None: outlen=self.r
         if not hasattr(self,'_S'):
             self._S = State(self.w)
         self._S = self.f(self._S^State(self.w).load(L[0]))

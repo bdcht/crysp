@@ -5,7 +5,7 @@
 # published under GPLv2 license
 
 from crysp.bits import *
-from crysp.utils.operators import rol,ror
+from crysp.utils.operators import rol
 
 from crysp.padding import MDpadding
 
@@ -60,10 +60,8 @@ class MD4(object):
 #------------------------------------------------------------------------------
 class MD5(MD4):
     def __init__(self):
-        self.size = 128
-        self.blocksize = 512
-        self.wsize = 32
-        # set functions and constants:
+        super().__init__()
+        # modified functions and constants:
         f = lambda x,y,z: z^(x&(y^z))
         g = lambda x,y,z: f(z,x,y)
         h = lambda x,y,z: x^y^z
@@ -86,7 +84,6 @@ class MD5(MD4):
                   0x6fa87e4f,0xfe2ce6e0,0xa3014314,0x4e0811a1,
                   0xf7537e82,0xbd3af235,0x2ad7d2bb,0xeb86d391]
         self.st = [(7,12,17,22),(5,9,14,20),(4,11,16,23),(6,10,15,21)]
-        self.initstate()
 
     def update(self,M,bitlen=None,padding=False):
         for W in self.iterblocks(M,bitlen=bitlen,padding=padding):
@@ -205,7 +202,6 @@ class MD6(object):
         return b''.join((pack(c,'>L') for c in Ml))
 
     def f(self,N):
-        C = Poly(0,64,dim=16)
         n = N.dim
         t = 16*self.rounds
         t0,t1,t2,t3,t4 = 17,18,21,31,67

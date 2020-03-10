@@ -9,7 +9,6 @@ from crysp.bits import *
 from crysp.mode import Chain
 
 from io import BytesIO
-from functools import reduce
 
 class Skein(object):
     def __init__(self,Nb,No,

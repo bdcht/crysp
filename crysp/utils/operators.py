@@ -17,3 +17,5 @@ def concat(L,bigend=False):
     if len(L)==1: return L[0]
     if bigend: L = reversed(L)
     return reduce(lambda x,y: x//y, L)
+
+__all__ = ['reduce','rol','ror','concat']

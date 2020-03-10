@@ -2,7 +2,8 @@
 # Copyright (C) 2011 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
 
-from .des import *
+from .bits import Bits
+from .des import subkey,IP,IPinv,PC1,P,E,S
 from .poly import Poly
 
 # -----------------------------------------------------------------------------

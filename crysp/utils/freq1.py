@@ -15,7 +15,7 @@ def hist(files):
     for fname in files:
         try:
             f = open(fname)
-        except:
+        except Exception:
             print('error opening file %s'%fname)
             continue
         print('processing file %s ...'%fname,end='')
@@ -41,7 +41,7 @@ def histplot(H,IC,title='',color=None,edgecolor=None):
     ax = pyplot.gca()
     ax.set_xlim(0,256)
     ax.set_xticks((10,32,49,65,97,231))
-    labels = ax.set_xticklabels(('10:\\n','32:sp','49:num','65:A-Z',u'97:a-z',u'231:çéèêë'))
+    ax.set_xticklabels(('10:\\n','32:sp','49:num','65:A-Z',u'97:a-z',u'231:çéèêë'))
 
 if __name__=='__main__':
     import sys

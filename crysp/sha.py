@@ -34,7 +34,6 @@ class SHA1(object):
         self.padmethod = SHApadding(self.blocksize,self.wsize)
 
     def iterblocks(self,M,bitlen=None,padding=False):
-        osize = self.blocksize//8
         fmt = '>16L' if self.wsize==32 else '>16Q'
         for B in self.padmethod.iterblocks(M,bitlen=bitlen,padding=padding):
             W = struct.unpack(fmt,B)
@@ -65,7 +64,7 @@ class SHA1(object):
             self.H[4] += e
         return b''.join([pack(h,'>L') for h in self.H])
 
-class SHA2(SHA1):
+class SHA2(SHA1): #lgtm [py/missing-call-to-init]
     def __init__(self,size,t=0):
         assert size in (224,256,384,512)
         self.size = size
@@ -122,7 +121,7 @@ class SHA2(SHA1):
             28db77f523047d84 32caab7b40c72493 3c9ebe0a15c9bebc 431d67c49c100d4c
             4cc5d4becb3e42b6 597f299cfc657e2a 5fcb6fab3ad6faec 6c44198c4a475817
             '''.split()]
-        self.initstate()
+        self.initstate() #lgtm [py/init-calls-subclass]
 
     def initstate(self):
         t = self.outlen*8

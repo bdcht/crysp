@@ -13,7 +13,7 @@ def hist(files):
     for fname in files:
         try:
             f = open(fname)
-        except:
+        except Exception:
             print('error opening file %s'%fname)
             continue
         print('processing file %s ...'%fname,end='')

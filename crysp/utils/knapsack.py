@@ -11,7 +11,7 @@ def exactsum(l,s,i=0,r=[]):
     if s==0: return True
     if s<0 or i==n: return False
     if exactsum(l,s-l[i][1],i+1):
-        r.append(l[i])
+        r.append(l[i]) #lgtm [py/modification-of-default-value]
         return True if i else r
     else:
         return exactsum(l,s,i+1)
@@ -27,7 +27,7 @@ def dynprog(l,s):
         m = None
         for i in range(n):
             u = x-l[i][1]
-            if (u>=0 and (u in p) and (p[u][0]<m or m==None)):
+            if (u>=0 and (u in p) and (p[u][0]<m or (m is None))):
                     m = p[u][0]
                     im = i
         if m!=None:

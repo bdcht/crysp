@@ -161,7 +161,6 @@ class TLSH(object):
         p1  = l-1
         p2  = p1+l
         p3  = p2+l
-        end = p3+l
         bkt = sorted(self.a_bucket[:self.bktlen])
         return float(bkt[p1]),float(bkt[p2]),float(bkt[p3])
 
