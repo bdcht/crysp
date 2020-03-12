@@ -4,7 +4,7 @@
 # Copyright (C) 2013 Axel Tillequin (bdcht3@gmail.com) 
 # published under GPLv2 license
 
-from crysp.padding import *
+from crysp.padding import nopadding,pkcs7
 
 from io import BytesIO
 

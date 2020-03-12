@@ -6,6 +6,8 @@
 
 from crysp.bits import *
 
+__all__ = ['struct','Bits','reverse_byte','pack','unpack','SubPoly','Poly']
+
 class SubPoly(object):
   """The SubPoly class represents an ordered sequence of elements of a ring.
 

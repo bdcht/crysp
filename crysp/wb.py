@@ -43,7 +43,7 @@ class WhiteDES(object):
 
     def dec(self,C):
         assert len(C)==8
-        C = Bits(C)
+        #C = Bits(C)
         raise NotImplementedError
 
 # -----------------------------------------------------------------------------

@@ -26,7 +26,7 @@ class SHA1(object):
                  [0x6ed9eba1]*20 +\
                  [0x8f1bbcdc]*20 +\
                  [0xca62c1d6]*20
-        self.initstate()
+        self.initstate() #lgtm [py/init-calls-subclass]
 
     def initstate(self):
         H = [0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0]
