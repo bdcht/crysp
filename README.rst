@@ -8,6 +8,10 @@ Crypto Stuff in Python
 .. image:: https://travis-ci.org/bdcht/crysp.svg?branch=master
     :target: https://travis-ci.org/bdcht/crysp
 
+.. image:: https://img.shields.io/lgtm/grade/python/g/bdcht/crysp.svg?logo=lgtm&logoWidth=18
+    :target: https://lgtm.com/projects/g/bdcht/crysp/context:python
+    :alt: Code Quality
+
 .. image:: https://badge.fury.io/py/crysp.svg
     :target: https://badge.fury.io/py/crysp
 
