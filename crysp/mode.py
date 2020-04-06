@@ -6,17 +6,18 @@
 
 from crysp.padding import nopadding,pkcs7
 from io import BytesIO
+from crysp.bits import pack, unpack, Bits
 
 # -----------------------------------------------------------------------------
 # Mode of Operation Core class, default padding is nopadding.
 class Mode(object):
     def __init__(self,cipher,pad=nopadding):
         self._cipher = cipher
-        self.pad = pad(l=cipher.size)
+        self.pad = pad(l=cipher.blocksize)
 
     @property
     def len(self):
-        return self._cipher.size//8
+        return self._cipher.blocksize//8
 
     def iterblocks(self,M,**kargs):
         for B in self.pad.iterblocks(M,**kargs):
@@ -155,36 +156,69 @@ class CTS_CBC(Mode):
 
 # -----------------------------------------------------------------------------
 # Counter mode with provided iterable counter (no padding)
+class DefaultCounter:
+    def __init__(self,bytesize,iv=None):
+        self.bytesize = bytesize
+        if iv is not None:
+            x = bytesize//2
+            assert len(iv)==bytesize
+            self.setup(iv[0:x],iv[x:])
+
+    def setup(self,nonce=None,count=None):
+        l = self.bytesize
+        if nonce is None:
+            nonce = b'\0'*(l//2)
+        if count is None:
+            count = b'\0'*(l//2)
+        self.nonce = nonce
+        self.count0 = count
+        return self
+
+    def reset(self):
+        self.count = Bits(*unpack(self.count0,'>L'))
+
+    def __call__(self):
+        try:
+            res = pack(self.count,'>L')
+            self.count += 1
+            return self.nonce+res
+        except AttributeError:
+            print("setup and reset counter is needed")
+
 class CTR(Mode):
     def __init__(self,cipher,counter=None):
-        Mode.__init__(self,cipher)
-        try:
-            self.counter = (c for c in counter)
-        except TypeError:
-            print(counter,'is not iterable')
+        super().__init__(cipher)
+        if counter is None:
+            counter = DefaultCounter(self.len)
+        elif isinstance(counter,bytes):
+            counter = DefaultCounter(self.len,counter)
+        self.counter = counter
 
     # encryption mode
     def enc(self,M):
-        self.__cache = []
+        self.counter.reset()
+        self.pad.reset()
         C = []
         for b in self.iterblocks(M):
-            c = self.counter.next()
-            self.__cache.append(c)
+            c = self.counter()
             k = self._cipher.enc(c)
             x = self.xorstr(b,k)
             C.append(x)
         return b''.join(C)
+
     # decryption mode
     def dec(self,C):
+        self.counter.reset()
+        self.pad.reset()
+        P = self.enc(C)
         n,p = divmod(len(C),self.len)
-        assert p==0
-        M = []
-        P = BytesIO(C)
-        for c in range(n):
-            k = self._cipher.enc(self.__cache.pop(0))
-            x = self.xorstr(P.read(self.len),k)
-            M.append(x)
-        return self.pad.remove(b''.join(M))
+        if p>0:
+            assert len(P)==n+1
+            res = P[:-p]
+        else:
+            assert len(P)==n
+            res = P
+        return res
 
 # -----------------------------------------------------------------------------
 # Chain mode of Operation Core class for Digest algorithms, nopadding default

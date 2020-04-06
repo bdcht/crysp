@@ -63,6 +63,10 @@ class Threefish(object):
     def size(self):
         return self.K.size
 
+    @property
+    def blocksize(self):
+        return self.K.size
+
     # compute the Nw subkeys of round s:
     def __ks(self,s):
         k,t = self.__k,self.__t

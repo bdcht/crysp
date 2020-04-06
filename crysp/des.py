@@ -8,6 +8,7 @@ from crysp.bits import *
 # 3-DES with all keying options
 class TDEA(object):
     size = 64
+    blocksize = 64
 
     def __init__(self,K1,K2=None,K3=None):
         if len(K1)>8:
@@ -34,16 +35,16 @@ class TDEA(object):
 # DES block cipher primitive
 class DES(object):
     size = 64
+    blocksize = 64
 
     def __init__(self,K):
         assert len(K)==self.size//8
         self.K = Bits(K,self.size)
 
     def enc(self,M):
-        assert len(M)==8
         M = Bits(M)
+        assert M.size==self.blocksize
         K = self.K
-        assert M.size==64
         k = PC1(K)
         blk = IP(M)
         L = blk[0:32]
@@ -59,10 +60,9 @@ class DES(object):
         return (IPinv(C)).bytes()
 
     def dec(self,C):
-        assert len(C)==8
         C = Bits(C)
+        assert C.size==self.blocksize
         K = self.K
-        assert C.size==64
         k = PC1(K)
         blk = IP(C)
         L = blk[0:32]

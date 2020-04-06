@@ -62,3 +62,21 @@ def test_aes_256_random():
     assert E.Nr==14
     m = pack(Bits(random.getrandbits(128)))
     assert E.dec(E.enc(m)) == m
+
+def test_aes_ctr():
+    from crysp.mode import DefaultCounter,CTR
+    K = codecs.decode("2b7e151628aed2a6abf7158809cf4f3c","hex")
+    iv = codecs.decode("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff","hex")
+
+    m1 = codecs.decode("6bc1bee22e409f96e93d7e117393172a","hex")
+    m2 = codecs.decode("ae2d8a571e03ac9c9eb76fac45af8e51","hex")
+    m3 = codecs.decode("30c81c46a35ce411e5fbc1191a0a","hex")
+
+    E = CTR(AES(K),iv)
+
+    c1 = E.enc(m1)
+    assert c1.hex() == "874d6191b620e3261bef6864990db6ce"
+    c12 = E.enc(m1+m2)
+    assert c12.hex() == c1.hex()+"9806f66b7970fdff8617187bb9fffdff"
+    c123 = E.enc(m1+m2+m3)
+    assert c123.hex() == c12.hex()+"5ae4df3edbd5d35e5b4f09020db0"

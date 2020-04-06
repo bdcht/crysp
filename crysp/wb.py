@@ -21,6 +21,7 @@ class WhiteDES(object):
         self.tM2 = tM2
         self.tM3 = tM3
         self.size = 64
+        self.blocksize = 64
 
     def __FX(self,v):
         res = Bits(0,96)

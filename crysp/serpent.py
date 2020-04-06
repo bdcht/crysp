@@ -9,6 +9,7 @@ from crysp.utils.operators import ror,rol,concat
 # Serpent-1 block cipher primitive
 class Serpent(object):
     size = 128
+    blocksize = 128
 
     def __init__(self,K):
         self.K = Bits(K,bitorder=1)
@@ -26,8 +27,8 @@ class Serpent(object):
         self.keys = _keysched(prekey)
 
     def enc(self,M):
-        assert len(M)==16
         R = Bits(M,bitorder=1)
+        assert R.size==self.blocksize
         B = R
         for i in range(31):
             B = _L(_S(i%8,B^self.keys[i]))
@@ -36,8 +37,8 @@ class Serpent(object):
         return pack(C)
 
     def dec(self,C):
-        assert len(C)==16
         R = Bits(C,bitorder=1)
+        assert R.size==self.blocksize
         B = R
         B = _Sinv(31%8,B^self.keys[32])^self.keys[31]
         for i in range(30,-1,-1):
