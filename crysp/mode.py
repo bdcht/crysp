@@ -5,7 +5,6 @@
 # published under GPLv2 license
 
 from crysp.padding import nopadding,pkcs7
-
 from io import BytesIO
 
 # -----------------------------------------------------------------------------
@@ -39,7 +38,7 @@ class Mode(object):
 # Electronic Code Book, default padding is pkcs7
 class ECB(Mode):
     def __init__(self,cipher,pad=pkcs7):
-        Mode.__init__(self,cipher,pad)
+        super().__init__(cipher,pad)
     # encryption mode
     def enc(self,M):
         C = []
@@ -60,7 +59,7 @@ class ECB(Mode):
 # Electronic Code Book with Cypher Text Stealing (nopadding)
 class CTS_ECB(Mode):
     def __init__(self,cipher,pad=nopadding):
-        Mode.__init__(self,cipher,pad)
+        super().__init__(cipher,pad)
     # encryption mode
     def enc(self,M):
         n,p = divmod(len(M),self.len)
@@ -90,7 +89,7 @@ class CTS_ECB(Mode):
 # Cipher Block Chaining, default padding is pkcs7
 class CBC(Mode):
     def __init__(self,cipher,IV,pad=pkcs7):
-        Mode.__init__(self,cipher,pad)
+        super().__init__(cipher,pad)
         assert len(IV)==self.len
         self.IV = IV
     # encryption mode
@@ -116,7 +115,7 @@ class CBC(Mode):
 # Cipher Block Chaining with Cipher Text Stealing (nopadding)
 class CTS_CBC(Mode):
     def __init__(self,cipher,IV,pad=nopadding):
-        Mode.__init__(self,cipher,pad)
+        super().__init__(cipher,pad)
         assert len(IV)==self.len
         self.IV = IV
     # encryption mode
