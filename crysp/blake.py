@@ -130,8 +130,8 @@ class Blake2(Blake):
         self.outlen = kargs.get('outlen',self.outlen)
         self.rounds = 12 if self.size>256 else 10
         l = self.wsize//4
-        if salt is b'': salt = b'\0'*l
-        if pers is b'': pers = b'\0'*l
+        if salt == b'': salt = b'\0'*l
+        if pers == b'': pers = b'\0'*l
         self.keylen=keylen
         assert 0<self.outlen<=self.wsize
         assert self.keylen<=self.wsize
