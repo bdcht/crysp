@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='crysp',
-    version='1.1',
+    version='1.2',
     description='Crypto Stuff in Python',
     long_description='some of my crypto-related facilities...',
     url='https://github.com/bdcht/crysp',
