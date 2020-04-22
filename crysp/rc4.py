@@ -24,16 +24,19 @@ class RC4(object):
             j = (j+S.ival[i]+self.K.ival[i%self.K.dim])&0xff
             S[i,j] = S[j,i]
         self.S = S
+        self.i = 0
+        self.j = 0
 
     def keystream(self,l):
         S = self.S
         ks = []
-        i,j = 0,0
+        i,j = self.i,self.j
         while len(ks)<l:
             i = (i+1)&0xff
             j = (j+S.ival[i])&0xff
             S[i,j] = S[j,i]
             ks.append(S.ival[(S.ival[i]+S.ival[j])&0xff])
+        self.i,self.j = i,j
         return Poly(ks,8)
 
     def enc(self,m):
